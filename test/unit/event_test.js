@@ -108,6 +108,8 @@ new Test.Unit.Runner({
     this.assertEqual(1, count);
     span.fire("test:somethingElseHappened");
     this.assertEqual(2, count);
+    span.stopObserving("test:somethingHappened", observer); 
+    span.stopObserving("test:somethingElseHappened", observer);   
   },
   
   testStopObservingWithoutArguments: function() {
@@ -221,6 +223,15 @@ new Test.Unit.Runner({
     $('container').down().observe("test:somethingHappened", Prototype.emptyFunction);
     $('container').innerHTML += $('container').innerHTML;
     this.assertUndefined($('container').down(1)._prototypeEventID);
+  },
+  
+  testHandlerCallsPreserveOrder: function() {
+    var span = $("span"), order = [ ];
+    span.observe("test:somethingHappened", function(e) { order.push('first') }); 
+    span.observe("test:somethingHappened", function(e) { order.push('second') }); 
+    span.fire("test:somethingHappened"); 
+    this.assertEnumEqual(['first', 'second'], order); 
+    span.stopObserving("test:somethingHappened"); 
   }
 });
 

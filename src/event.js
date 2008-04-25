@@ -70,7 +70,7 @@ Event.Methods = (function() {
         var currentTarget = event.currentTarget;
         var tagName = currentTarget.tagName.toUpperCase();
         if (['load', 'error'].include(type) ||
-         (tagName === 'INPUT' && currentTarget.type === 'radio' && type === 'click'))
+         (tagName === "INPUT" && currentTarget.type === "radio" && type === "click"))
           node = currentTarget;
       }
       
@@ -183,32 +183,31 @@ Object.extend(Event, (function() {
   }
   
   function createWrapper(element, eventName, handler) {
-    var id = getEventID(element), _c = getCacheForID(id);
+    var id = getEventID(element), c = getCacheForID(id);
 
     // Attach the element itself onto its cache entry so we can retrieve it for
     // cleanup on page unload.
-    if (!_c.element) _c.element = element;
+    if (!c.element) c.element = element;
 
-    var c = getWrappersForEventName(id, eventName);
-    if (c.pluck("handler").include(handler)) return false;
+    var w = getWrappersForEventName(id, eventName);
+    if (w.pluck("handler").include(handler)) return false;
     
     var wrapper = function(event) {
       if (!Event || !Event.extend ||
         (event.eventName && event.eventName != eventName))
           return false;
       
-      Event.extend(event);
-      handler.call(element, event);
+      handler.call(element, Event.extend(event));
     };
     
     wrapper.handler = handler;
-    c.push(wrapper);
+    w.push(wrapper);
     return wrapper;
   }
   
   function findWrapper(id, eventName, handler) {
-    var c = getWrappersForEventName(id, eventName);
-    return c.find(function(wrapper) { return wrapper.handler == handler });
+    var w = getWrappersForEventName(id, eventName);
+    return w.find(function(wrapper) { return wrapper.handler == handler });
   }
   
   function destroyWrapper(id, eventName, handler) {
@@ -231,14 +230,14 @@ Object.extend(Event, (function() {
   }
   
   function onStop() {
-    document.detachEvent('onstop', onStop);
+    document.detachEvent("onstop", onStop);
     purgeListeners();
   }
   
   function onBeforeUnload() {
     if (document.readyState === "interactive") {
-      document.attachEvent('onstop', onStop);
-      (function() { document.detachEvent('onstop', onStop); }).defer();
+      document.attachEvent("onstop", onStop);
+      (function() { document.detachEvent("onstop", onStop); }).defer();
     }
   }
   
@@ -276,7 +275,7 @@ Object.extend(Event, (function() {
   // use its bfcache. Safari <= 3.1 has an issue with restoring the "document"
   // object when page is returned to via the back button using its bfcache.
   else if (Prototype.Browser.WebKit) {
-    window.addEventListener('unload', Prototype.emptyFunction, false);
+    window.addEventListener("unload", Prototype.emptyFunction, false);
   }
     
   return {
@@ -317,6 +316,7 @@ Object.extend(Event, (function() {
       var wrapper = findWrapper(id, eventName, handler);
       if (!wrapper) return element;
       
+      var name = getDOMEventName(eventName);
       if (element.removeEventListener) {
         element.removeEventListener(name, wrapper, false);
         destroyWrapper(id, eventName, handler); 
