@@ -1110,6 +1110,7 @@ Element.addMethods = function(methods) {
     Object.extend(Form, Form.Methods);
     Object.extend(Form.Element, Form.Element.Methods);
     Object.extend(Element.Methods.ByTag, {
+      "BUTTON":   Object.clone(Form.Element.Methods),
       "FORM":     Object.clone(Form.Methods),
       "INPUT":    Object.clone(Form.Element.Methods),
       "SELECT":   Object.clone(Form.Element.Methods),
