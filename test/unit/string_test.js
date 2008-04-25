@@ -211,6 +211,8 @@ new Test.Unit.Runner({
     var longScript   = '\nvar foo = 1;\n' + russianChars + longComment;
     var longString   = '<script type="text/javascript">'+ longScript + '<'+'/script>';
     this.assertEnumEqual([longScript], longString.extractScripts());
+    
+    this.assertEnumEqual([], ('<!--\n<script>boo();<'+'/script>\n-->').extractScripts());
   },
   
   testEvalScripts: function() {

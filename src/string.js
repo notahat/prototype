@@ -63,13 +63,18 @@ Object.extend(String.prototype, {
     return this.replace(new RegExp(Prototype.ScriptFragment, 'img'), '');
   },
   
-  extractScripts: function() {
-    var matchAll = new RegExp(Prototype.ScriptFragment, 'img');
-    var matchOne = new RegExp(Prototype.ScriptFragment, 'im');
-    return (this.match(matchAll) || []).map(function(scriptTag) {
-      return (scriptTag.match(matchOne) || ['', ''])[1];
-    });
-  },
+  extractScripts: (function() {
+  	var matchAll = new RegExp(Prototype.ScriptFragment, 'ig');
+    var matchOne = new RegExp(Prototype.ScriptFragment, 'i');
+    var matchComments = new RegExp('<!--\\s*' + Prototype.ScriptFragment + '\\s*-->', 'i');
+    
+  	return function() {
+      if (this.indexOf('<script') == -1) return [];
+      return (this.replace(matchComments, '').match(matchAll) || []).map(function(scriptTag) {
+        return (scriptTag.match(matchOne) || ['', ''])[1];
+      });
+    }
+  })(),
   
   evalScripts: function() {
     return this.extractScripts().map(function(script) { return eval(script) });
