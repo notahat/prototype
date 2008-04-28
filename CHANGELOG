@@ -1,3 +1,5 @@
+* Fix Event#element accessing inexistent tagName property (e.g. when element is a document). (kangax)
+
 * Amended failing Element#identify test.
 
 * Fix error when calling Event.stopObserving(window). (jddalton) [#30 state:resolved]
