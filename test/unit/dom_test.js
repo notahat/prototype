@@ -902,6 +902,16 @@ new Test.Unit.Runner({
   },
   
   testElementReadAttribute: function() {
+    var attribFormIssues = $('attributes_with_issues_form');
+ 	  this.assertEqual('blah-class', attribFormIssues.readAttribute('class'));
+ 	  this.assertEqual('post', attribFormIssues.readAttribute('method'));
+ 	  this.assertEqual('string', typeof(attribFormIssues.readAttribute('action')));
+ 	  this.assertEqual('string', typeof(attribFormIssues.readAttribute('id')));
+    
+    $(document.body).insert('<div id="ie_href_test_div"></div>'); 
+    $('ie_href_test_div').insert('<p>blah blah</p><a id="ie_href_test" href="test.html">blah</a>'); 
+    this.assertEqual('test.html', $('ie_href_test').readAttribute('href')); 
+    
     this.assertEqual('test.html' , $('attributes_with_issues_1').readAttribute('href'));
     this.assertEqual('L' , $('attributes_with_issues_1').readAttribute('accesskey'));
     this.assertEqual('50' , $('attributes_with_issues_1').readAttribute('tabindex'));

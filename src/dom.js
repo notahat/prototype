@@ -275,6 +275,11 @@ Element.Methods = {
     element = $(element);
     if (Prototype.Browser.IE) {
       var t = Element._attributeTranslations.read;
+      if(element.tagName.toUpperCase() == 'FORM' &&
+        !/^((child|parent)Node|(next|previous)Sibling)$/.test(name) &&
+          element.children[name]){
+        element = $(element.cloneNode(false));
+      }
       if (t.values[name]) return t.values[name](element, name);
       if (t.names[name]) name = t.names[name];
       if (name.include(':')) {
