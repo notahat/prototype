@@ -242,7 +242,7 @@ Object.extend(Event, (function() {
     }
   }
   
-  if (window.attachEvent) {
+  if (window.attachEvent && !window.addEventListener) {
     // Internet Explorer needs to remove event handlers on page unload
     // in order to avoid memory leaks.
     window.attachEvent("onunload", purgeListeners);
