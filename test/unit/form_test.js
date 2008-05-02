@@ -328,7 +328,6 @@ new Test.Unit.Runner({
     }, this);
   },
 
-
   testGetValue: function() {
     this.assertEqual('Click Me', Form.Element.getValue('button_type_button')); // Button element
     this.assertEqual(null, Form.Element.getValue('someBorkedId')); // Unknown
@@ -357,12 +356,14 @@ new Test.Unit.Runner({
     this.assertEqual(null, input.getValue(), 'checkbox should be unchecked');
     input.setValue(true);
     this.assertEqual("1", input.getValue(), 'checkbox should be checked');
+    
     // selectbox
     input = $('bigform')['vu'];
     input.setValue('3');
     this.assertEqual('3', input.getValue(), 'single select option improperly set');
     input.setValue('1');
     this.assertEqual('1', input.getValue());
+    
     // multiple select
     input = $('bigform')['vm[]'];
     input.setValue(['2', '3']);
