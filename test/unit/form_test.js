@@ -332,6 +332,7 @@ new Test.Unit.Runner({
     this.assertEqual('Click Me', Form.Element.getValue('button_type_button')); // Button element
     this.assertEqual(null, Form.Element.getValue('someBorkedId')); // Unknown
  	  this.assertEqual(null, Form.Element.getValue('form')); // Unsupported
+ 	  this.assertEqual(null, Form.Element.getValue('form')); // Unsupported
   },
   
   testSetValue: function(){
