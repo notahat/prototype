@@ -1,3 +1,5 @@
+* Speed up Function#argumentNames. Avoid Enum dependency. (samleb, Tobie Langel)
+
 * Amended failing Element#identify test.
 
 * Fix error when calling Event.stopObserving(window). (jddalton) [#30 state:resolved]
