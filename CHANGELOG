@@ -1,3 +1,7 @@
+* Element#down on an input element should not raise error. (humeniuc, kangax)
+
+* Form#serializeElements should not serialize file inputs. (kangax, Lonesome Boy)
+
 * For consistency, add additional optional parameter "context" to Number.prototype.times. (samleb)
 
 * Fix Event#element accessing inexistent tagName property (e.g. when element is a document). (kangax)
