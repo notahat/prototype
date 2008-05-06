@@ -1,3 +1,5 @@
+* For consistency, add additional optional parameter "context" to Number.prototype.times. (samleb)
+
 * Fix Event#element accessing inexistent tagName property (e.g. when element is a document). (kangax)
 
 * Amended failing Element#identify test.
