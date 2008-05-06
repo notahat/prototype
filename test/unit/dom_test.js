@@ -892,7 +892,7 @@ new Test.Unit.Runner({
       this.assertEqual("17px", $('style_test_dimensions').getStyle('height'));
     }
     
-    // height/width could always be calculated if it's set to "auto" (Firefox)
+    // height/width should always be calculated if it's set to "auto" (Firefox)
     this.assertNotNull($('auto_dimensions').getStyle('height'));
     this.assertNotNull($('auto_dimensions').getStyle('width'));
   },
