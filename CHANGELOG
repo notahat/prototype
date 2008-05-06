@@ -1,3 +1,5 @@
+* Fix an issue where Element#getHeight returns null if the height is set to "auto." (kangax, jddalton)
+
 * Make Element#absolutize use Element#getDimensions to prevent certain failures in IE. (kangax, jddalton)
 
 * Fix Element#writeAttribute('encType', 'multipart/form-data') on dynamically created form elements in IE. (jddalton, kangax, NoiseEee)
