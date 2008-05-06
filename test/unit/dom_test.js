@@ -1278,6 +1278,12 @@ new Test.Unit.Runner({
     // invoking on "absolute" positioned element should return element 
     var element = $('absolute_fixed_undefined').setStyle({position: 'absolute'});
     this.assertEqual(element, element.absolutize());
+    
+    // test relatively positioned element with no height specified for IE7
+    var element = $('absolute_relative'), dimensions = element.getDimensions();
+    element.absolutize();
+    this.assertIdentical(dimensions.width, element.getDimensions().width);
+    this.assertIdentical(dimensions.height, element.getDimensions().height);
   },
   
   testRelativize: function() {

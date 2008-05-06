@@ -523,11 +523,12 @@ Element.Methods = {
     if (element.getStyle('position') == 'absolute') return element;
     // Position.prepare(); // To be done manually by Scripty when it needs it.
 
-    var offsets = element.positionedOffset();
-    var top     = offsets[1];
-    var left    = offsets[0];
-    var width   = element.clientWidth;
-    var height  = element.clientHeight;
+    var offsets = element.positionedOffset(),  
+    dimensions = element.getDimensions(),  
+    top = offsets[1],  
+    left = offsets[0],  
+    width = dimensions.width,  
+    height = dimensions.height;  
 
     element._originalLeft   = left - parseFloat(element.style.left  || 0);
     element._originalTop    = top  - parseFloat(element.style.top || 0);
