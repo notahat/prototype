@@ -1,3 +1,5 @@
+* Fix Element#writeAttribute('encType', 'multipart/form-data') on dynamically created form elements in IE. (jddalton, kangax, NoiseEee)
+
 * Element#down on an input element should not raise error. (humeniuc, kangax)
 
 * Form#serializeElements should not serialize file inputs. (kangax, Lonesome Boy)

@@ -295,7 +295,7 @@ Element.Methods = {
     for (var attr in attributes) {
       name = t.names[attr] || attr;
       value = attributes[attr];
-      if (t.values[attr]) name = t.values[attr](element, value);
+      if (t.values[name]) name = t.values[name](element, value);
       if (value === false || value === null)
         element.removeAttribute(name);
       else if (value === true)
@@ -831,6 +831,10 @@ else if (Prototype.Browser.IE) {
     values: {
       checked: function(element, value) {
         element.checked = !!value;
+      },
+      
+      encType: function(element, value) {  
+        element.getAttributeNode('encType').value = value;  
       },
       
       style: function(element, value) {
