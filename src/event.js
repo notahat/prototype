@@ -151,11 +151,11 @@ Object.extend(Event, (function() {
   function getEventID(element) {
     // Event ID is stored as the 0th index in a one-item array so that it
     // won't get copied to a new node when cloneNode is called.
+    if (element === window) return 1;
     if (element._prototypeEventID) return element._prototypeEventID[0];
-    arguments.callee.id = arguments.callee.id || 1;
-    
-    return element._prototypeEventID = [++arguments.callee.id];
+    return element._prototypeEventID = [arguments.callee.id++];
   }
+  getEventID.id = 2;
   
   function getDOMEventName(eventName) {
     if (eventName && eventName.include(':')) return "dataavailable";
@@ -164,6 +164,17 @@ Object.extend(Event, (function() {
   
   function getCacheForID(id) {
     return cache[id] = cache[id] || { };
+  }
+  
+  function addEventDispatcher(element, eventName, dispatchWrapper) {
+    var wrappers = getWrappersForEventName(getEventID(element), eventName);
+    if (!wrappers.dispatcher) {
+      wrappers.dispatcher = function(event) {
+        wrappers.invoke('call', null, event);
+      };
+      if(dispatchWrapper) wrappers.dispatcher = wrappers.dispatcher.wrap(dispatchWrapper);
+      element.attachEvent("on" + getDOMEventName(eventName), wrappers.dispatcher);
+    }
   }
   
   function getWrappersForEventName(id, eventName) {
@@ -203,7 +214,9 @@ Object.extend(Event, (function() {
   function destroyWrapper(id, eventName, handler) {
     var c = getCacheForID(id);
     if (!c[eventName]) return false;
+    var d = c[eventName].dispatcher;
     c[eventName] = c[eventName].without(findWrapper(id, eventName, handler));
+    c[eventName].dispatcher = d;
   }
   
   // Loop through all elements and remove all handlers on page unload. IE
@@ -237,13 +250,32 @@ Object.extend(Event, (function() {
     // IE also doesn't fire the unload event if the page is navigated away
     // from before it's done loading. Workaround adapted from
     // http://blog.moxiecode.com/2008/04/08/unload-event-never-fires-in-ie/.
-    window.attachEvent("onbeforeunload", onBeforeUnload);        
+    window.attachEvent("onbeforeunload", onBeforeUnload);
+    
+    // Ensure window onload is fired after "dom:loaded"
+    addEventDispatcher(window, 'load', function(proceed, event) {
+    	if(document.loaded){
+    	  proceed(event);
+    	} else {
+    	  arguments.callee.defer(event);
+    	}
+    });
+    
+    // Ensure window onresize is fired only once per resize
+    addEventDispatcher(window, 'resize', function(proceed, event) {
+      var callee = arguments.callee, dimensions = document.viewport.getDimensions();
+      if (dimensions.width != callee.prevWidth || dimensions.height != callee.prevHeight){
+        callee.prevWidth  = dimensions.width;
+        callee.prevHeight = dimensions.height;
+        proceed(event);
+      }
+    });
   }
   
   // Safari has a dummy event handler on page unload so that it won't
   // use its bfcache. Safari <= 3.1 has an issue with restoring the "document"
   // object when page is returned to via the back button using its bfcache.
-  if (Prototype.Browser.WebKit) {
+  else if (Prototype.Browser.WebKit) {
     window.addEventListener('unload', Prototype.emptyFunction, false);
   }
     
@@ -258,7 +290,7 @@ Object.extend(Event, (function() {
       if (element.addEventListener) {
         element.addEventListener(name, wrapper, false);
       } else {
-        element.attachEvent("on" + name, wrapper);
+        addEventDispatcher(element, eventName);
       }
       
       return element;
@@ -287,11 +319,15 @@ Object.extend(Event, (function() {
       
       if (element.removeEventListener) {
         element.removeEventListener(name, wrapper, false);
+        destroyWrapper(id, eventName, handler); 
       } else {
-        element.detachEvent("on" + name, wrapper);
+        destroyWrapper(id, eventName, handler);
+        var wrappers = getWrappersForEventName(id, eventName); 
+        if (!wrappers.length) { 
+          element.detachEvent("on" + name, wrappers.dispatcher); 
+          wrappers.dispatcher = null; 
+        } 
       }
-      
-      destroyWrapper(id, eventName, handler);
       
       return element;
     },
@@ -341,7 +377,7 @@ Object.extend(document, {
 
 (function() {
   /* Support for the DOMContentLoaded event is based on work by Dan Webb, 
-     Matthias Miller, Dean Edwards and John Resig. */
+     Matthias Miller, Dean Edwards, John Resig and Diego Perini. */
 
   var timer;
   
@@ -353,26 +389,41 @@ Object.extend(document, {
   }
   
   if (document.addEventListener) {
-    if (Prototype.Browser.WebKit) {
-      timer = window.setInterval(function() {
-        if (/loaded|complete/.test(document.readyState))
-          fireContentLoadedEvent();
-      }, 0);
-      
-      Event.observe(window, "load", fireContentLoadedEvent);
-      
-    } else {
-      document.addEventListener("DOMContentLoaded", 
-        fireContentLoadedEvent, false);
-    }
+    document.addEventListener("DOMContentLoaded", function() {
+      // Ensure all stylesheets are loaded, solves Opera issue
+      if (Prototype.Browser.Opera && 
+          $A(document.styleSheets).any(function(s) { return s.disabled }))
+        return arguments.callee.defer();
+      fireContentLoadedEvent();
+    }, false);
     
   } else {
-    document.write("<script id=__onDOMContentLoaded defer src=//:><\/script>");
-    $("__onDOMContentLoaded").onreadystatechange = function() { 
-      if (this.readyState == "complete") {
-        this.onreadystatechange = null; 
+    document.attachEvent("onreadystatechange", function() {
+      if (document.readyState == "complete") {
+        document.detachEvent("onreadystatechange", arguments.callee);
         fireContentLoadedEvent();
       }
-    }; 
+    });
+    
+    if (window == top) {
+      timer = setInterval(function() {
+        try {
+          document.documentElement.doScroll("left");
+        } catch(e) { return }
+        fireContentLoadedEvent();
+      }, 10);
+    }
   }
+  
+  // Only WebKit nightly builds support DOMContentLoaded
+  if (Prototype.Browser.WebKit) {
+    timer = setInterval(function() {
+      if (/loaded|complete/.test(document.readyState) &&
+          document.styleSheets.length == $$('style, link[rel="stylesheet"]').length)
+        fireContentLoadedEvent();
+    }, 10);
+  }
+  
+  // Worst case fallback... 
+  Event.observe(window, "load", fireContentLoadedEvent); 
 })();
