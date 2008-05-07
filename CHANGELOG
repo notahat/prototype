@@ -1,3 +1,7 @@
+* Replace all instances of foo.__proto__ by foo['__proto__'] for Caja-compliance. (Tobie Langel)
+
+* Speed up Function#argumentNames. Avoid Enum dependency. (Samuel Lebeau, Tobie Langel)
+
 * Fix an issue where Element#getHeight returns null if the height is set to "auto." (kangax, ylucas, jddalton)
 
 * Make Element#absolutize use Element#getDimensions to prevent certain failures in IE. (kangax, pphilipp, jddalton)
@@ -8,7 +12,7 @@
 
 * Form#serializeElements should not serialize file inputs. (kangax, Lonesome Boy)
 
-* For consistency, add additional optional parameter "context" to Number.prototype.times. (samleb)
+* For consistency, add additional optional parameter "context" to Number.prototype.times. (Samuel Lebeau)
 
 * Fix Event#element accessing inexistent tagName property (e.g. when element is a document). (kangax)
 
