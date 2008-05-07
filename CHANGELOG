@@ -1,3 +1,5 @@
+* Allow Function#argumentNames to handle line breaks between arguments. (Geoff M. Granum, Tobie Langel) [#63 state:resolved]
+
 * Replace all instances of foo.__proto__ by foo['__proto__'] for Caja-compliance. (Tobie Langel)
 
 * Speed up Function#argumentNames. Avoid Enum dependency. (Samuel Lebeau, Tobie Langel)
