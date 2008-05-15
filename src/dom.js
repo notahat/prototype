@@ -283,8 +283,13 @@ Element.Methods = {
   
   readAttribute: function(element, name) {
     element = $(element);
+    var t = Element._attributeTranslations.read;
+    if (t.names[name]) name = t.names[name];
+    
     if (Prototype.Browser.IE) {
       var t = Element._attributeTranslations.read;
+      // If we're reading from a form, avoid a conflict between an attribute
+      // and a child name.
       if (element.tagName.toUpperCase() == 'FORM' &&
         !/^((child|parent)Node|(next|previous)Sibling)$/.test(name) &&
           element.children[name]){
@@ -296,7 +301,8 @@ Element.Methods = {
         return (!element.attributes || !element.attributes[name]) ? null : 
          element.attributes[name].value;
       }
-    }
+    } else if (t.values[name]) return t.values[name](element, name);
+    
     return element.getAttribute(name);
   },
   
@@ -677,8 +683,26 @@ Element._attributeTranslations = {
       htmlFor:   'for'      
     }, 
     values: { }
+  },
+  
+  read: {
+    names: { },
+    values: {
+      _flag: function(element, attribute) {
+        return $(element).hasAttribute(attribute) ? attribute : null;
+      }
+    }
   }
 };
+
+(function(v) {
+  Object.extend(v, {
+    disabled: v._flag,
+    checked:  v._flag,
+    readonly: v._flag,
+    multiple: v._flag
+  });
+})(Element._attributeTranslations.read.values);
 
 if (Prototype.Browser.Opera) { 
   Element.Methods.getStyle = Element.Methods.getStyle.wrap( 
@@ -810,76 +834,73 @@ else if (Prototype.Browser.IE) {
       'alpha(opacity=' + (value * 100) + ')';
     return element;   
   };
-
-  Element._attributeTranslations = {
-    read: {
-      names: {
-        'class': 'className',
-        'for':   'htmlFor'
-      },
-      values: {
-        _getAttr: function(element, attribute) {
-          return element.getAttribute(attribute, 2);
-        },
-        _getAttrNode: function(element, attribute) {
-          var node = element.getAttributeNode(attribute);
-          return node ? node.value : "";
-        },
-        _getEv: function(element, attribute) {
-          attribute = element.getAttribute(attribute);
-          return attribute ? attribute.toString().slice(23, -2) : null;
-        },
-        _flag: function(element, attribute) {
-          return $(element).hasAttribute(attribute) ? attribute : null;
-        },
-        style: function(element) {
-          return element.style.cssText.toLowerCase();
-        },
-        title: function(element) {
-          return element.title;
-        }
-      }
-    }
-  };
   
-  Element._attributeTranslations.write = {
-    names: Object.extend({
-      cellpadding: 'cellPadding',
-      cellspacing: 'cellSpacing'
-    }, Element._attributeTranslations.read.names),
-    values: {
-      checked: function(element, value) {
-        element.checked = !!value;
-      },
-      
-      encType: function(element, value) {  
-        element.getAttributeNode('encType').value = value;  
-      },
-      
-      style: function(element, value) {
-        element.style.cssText = value ? value : '';
-      }
-    }
-  };
-  
-  Element._attributeTranslations.has = {};
+  (function(t) {
+    t.has = { };
+    t.write.names = { };
     
-  $w('colSpan rowSpan vAlign dateTime accessKey tabIndex ' +
-      'encType maxLength readOnly longDesc frameBorder').each(function(attr) {
-    Element._attributeTranslations.write.names[attr.toLowerCase()] = attr;
-    Element._attributeTranslations.has[attr.toLowerCase()] = attr;
+    $w('cellPadding cellSpacing colSpan rowSpan vAlign dateTime accessKey ' +
+       'tabIndex encType maxLength readOnly longDesc frameBorder').each(function(attr) {
+      var lower = attr.toLowerCase();
+      t.has[lower] = attr;
+      t.read.names[lower] = attr;
+      t.write.names[lower] = attr;
+    });
+    
+    [t.write.names, t.read.names].each(function(n) {
+      Object.extend(n, {
+        'class': 'className',
+        'for': 'htmlFor'
+      });
+    });
+  })(Element._attributeTranslations);
+  
+  Object.extend(Element._attributeTranslations.read.values, {
+
+    _getAttr: function(element, attribute) {
+      return element.getAttribute(attribute, 2);
+    },
+    
+    _getAttrNode: function(element, attribute) {
+      var node = element.getAttributeNode(attribute);
+      return node ? node.value : "";
+    },
+    
+    _getEv: function(element, attribute) {
+      attribute = element.getAttribute(attribute);
+      return attribute ? attribute.toString().slice(23, -2) : null;
+    },
+    
+    style: function(element) {
+      return element.style.cssText.toLowerCase();
+    },
+    
+    title: function(element) {
+      return element.title;
+    }
+  });
+  
+  Object.extend(Element._attributeTranslations.write.values, {
+    checked: function(element, value) {
+      element.checked = !!value;
+    },
+    
+    encType: function(element, value) {  
+      element.getAttributeNode('encType').value = value;  
+    },
+    
+    style: function(element, value) {
+      element.style.cssText = value ? value : '';
+    }
   });
   
   (function(v) {
+    delete v.readonly;
     Object.extend(v, {
       href:        v._getAttr,
       src:         v._getAttr,
       type:        v._getAttr,
       action:      v._getAttrNode,
-      disabled:    v._flag,
-      checked:     v._flag,
-      readonly:    v._flag,
-      multiple:    v._flag,
       onload:      v._getEv,
       onunload:    v._getEv,
       onclick:     v._getEv,
@@ -897,7 +918,11 @@ else if (Prototype.Browser.IE) {
       onsubmit:    v._getEv,
       onreset:     v._getEv,
       onselect:    v._getEv,
-      onchange:    v._getEv
+      onchange:    v._getEv,
+      readOnly:    v._flag.wrap(function(proceed, element, attribute) {
+        attribute = proceed(element, attribute);
+        return attribute? 'readonly' : null;
+      })
     });
   })(Element._attributeTranslations.read.values);
 

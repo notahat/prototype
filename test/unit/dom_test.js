@@ -944,6 +944,12 @@ new Test.Unit.Runner({
     var table = $('write_attribute_table');
     this.assertEqual('4', table.readAttribute('cellspacing'));
     this.assertEqual('6', table.readAttribute('cellpadding'));
+    
+    // test for consistent flag value across browsers
+    ["true", true, " ", 'rEadOnLy'].each(function(value) {
+      $('attributes_with_issues_readonly').writeAttribute('readonly', value);
+      this.assertEqual('readonly', $('attributes_with_issues_readonly').readAttribute('readonly'));
+    }, this);
   },
   
   testElementWriteAttribute: function() {
