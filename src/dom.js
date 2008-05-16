@@ -546,23 +546,28 @@ Element.Methods = {
     if (element.getStyle('position') == 'absolute') return element;
     // Position.prepare(); // To be done manually by Scripty when it needs it.
 
-    var offsets = element.positionedOffset(),  
-    dimensions = element.getDimensions(),  
-    top = offsets[1],  
-    left = offsets[0],  
-    width = dimensions.width,  
-    height = dimensions.height;  
+    var offsets = element.positionedOffset(),
+    dimensions = element.getDimensions(),
+    top = offsets[1],
+    left = offsets[0],
+    width = dimensions.width,
+    height = dimensions.height;
 
-    element._originalLeft   = left - parseFloat(element.style.left  || 0);
-    element._originalTop    = top  - parseFloat(element.style.top || 0);
-    element._originalWidth  = element.style.width;
-    element._originalHeight = element.style.height;
+    Object.extend(element, {
+      _originalLeft:   left - parseFloat(element.style.left  || 0),
+      _originalTop:    top  - parseFloat(element.style.top || 0),
+      _originalWidth:  element.style.width,
+      _originalHeight: element.style.height
+    });
 
-    element.style.position = 'absolute';
-    element.style.top    = top + 'px';
-    element.style.left   = left + 'px';
-    element.style.width  = width + 'px';
-    element.style.height = height + 'px';
+    element.setStyle({
+      position: 'absolute',
+      top:      top + 'px',
+      left:     left + 'px',
+      width:    width + 'px',
+      height:   height + 'px'
+    });
+    
     return element;
   },
 
@@ -571,11 +576,32 @@ Element.Methods = {
     if (element.getStyle('position') == 'relative') return element;
     // Position.prepare(); // To be done manually by Scripty when it needs it.
 
-    element.style.position = 'relative';
-    var top  = parseFloat(element.style.top  || 0) - (element._originalTop || 0);
-    var left = parseFloat(element.style.left || 0) - (element._originalLeft || 0);
+    if(!element._originalTop){
+      /* fix bizarre IE position issue with empty elements */
+      var isBuggy = element.outerHTML && element.innerHTML.blank();
+      if(isBuggy) element.innerHTML = '\x00';
+      
+      Object.extend(element, {
+        _originalTop:    element.offsetTop,
+        _originalLeft:   element.offsetLeft,
+        _originalWidth:  element.clientWidth  + 'px',
+        _originalHeight: element.clientHeight + 'px'
+      });
+      
+      if(isBuggy) element.innerHTML = '';
+    }
 
-    element.style.top    = top + 'px';
+    element.style.position = 'relative';
+    
+    var offsets = element.positionedOffset(),
+    top  = element._originalTop  - offsets.top,
+    left = element._originalLeft - offsets.left;
+    
+    var isAuto = /^(auto|)$/;  
+    if(!isAuto.test(element.style.top))  top += element._originalTop;
+    if(!isAuto.test(element.style.left)) left+= element._originalLeft;
+    
+    element.style.top    = top  + 'px';
     element.style.left   = left + 'px';
     element.style.height = element._originalHeight;
     element.style.width  = element._originalWidth;
