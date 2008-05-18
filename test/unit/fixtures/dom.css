@@ -34,9 +34,9 @@ div.style-test { margin-left: 1px }
 #dimensions-display-none-pos-rel,
 #dimensions-visible-pos-abs,
 #dimensions-display-none-pos-abs {
-    font-size: 10px;
-    height: 10em;
-    width: 20em;
+  font-size: 10px;
+  height: 10em;
+  width: 20em;
 }
 
 #dimensions-visible-pos-abs,
@@ -53,18 +53,42 @@ div.style-test { margin-left: 1px }
   left: 15px;
 }
 
-#dimensions-display-none, #imensions-display-none-pos-rel, #dimensions-display-none-pos-abs {
-    display: none;
+#dimensions-display-none, #dimensions-display-none-pos-rel, #dimensions-display-none-pos-abs {
+  display: none;
 }
 
 #dimensions-table, #dimensions-tbody, #dimensions-tr, #dimensions-td {
-    font-size: 10px;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-spacing: 0;
-    height: 10em;
-    width: 20em;
+  font-size: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-spacing: 0;
+  height: 10em;
+  width: 20em;
+}
+
+.getDimensionsBox {
+  float: left;
+  clear: both;
+  width: 200px;
+  height: 200px;
+  background: #1d8bcb;
+}
+.getDimensionsBox div { float: left; }
+.getDimensionsBox .deep {
+  height: 150px;
+  width: 150px;
+  background: #21bacc;
+}
+.getDimensionsBox .deeper {
+  height: 130px;
+  width: 130px;
+  background: #94dee6;
+}
+.getDimensionsBox .deepest {
+  height: 100px;
+  width: 100px;
+  background: #cbeff3;
 }
 
 #notInlineAbsoluted { position: absolute; }

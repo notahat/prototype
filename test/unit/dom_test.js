@@ -1144,6 +1144,18 @@ new Test.Unit.Runner({
     $('dimensions-table').hide();
     this.assertIdentical(100, $('dimensions-table').getDimensions().height);
     this.assertIdentical(200, $('dimensions-table').getDimensions().width);
+    
+    // display:none ancestors
+    $R(1, 4).each(function(num) {
+      this.assertIdentical(200, $('getDimensionsBox'+num).getDimensions().height);
+      this.assertIdentical(200, $('getDimensionsBox'+num).getDimensions().width);
+      this.assertIdentical(150, $('getDimensionsBox'+num).down('.deep').getDimensions().height);
+      this.assertIdentical(150, $('getDimensionsBox'+num).down('.deep').getDimensions().width);
+      this.assertIdentical(130, $('getDimensionsBox'+num).down('.deeper').getDimensions().height);
+      this.assertIdentical(130, $('getDimensionsBox'+num).down('.deeper').getDimensions().width);
+      this.assertIdentical(100, $('getDimensionsBox'+num).down('.deepest').getDimensions().height);
+      this.assertIdentical(100, $('getDimensionsBox'+num).down('.deepest').getDimensions().width);
+    }, this);
   },
       
   testDOMAttributesHavePrecedenceOverExtendedElementMethods: function() {
