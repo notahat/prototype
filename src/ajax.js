@@ -1,10 +1,24 @@
 var Ajax = {
   getTransport: function() {
-    return Try.these(
-      function() {return new XMLHttpRequest()},
-      function() {return new ActiveXObject('Msxml2.XMLHTTP')},
-      function() {return new ActiveXObject('Microsoft.XMLHTTP')}
+    var transport = false;
+    Ajax.getTransport = Try.these(
+      function() {
+        /* fallback on activex xmlhttp to avoid IE7 local file-system read error */
+        if(Prototype.Browser.IE && window.location.href.indexOf('file://') == 0) throw 'skip';
+        transport = new XMLHttpRequest();
+        return function(){ return new XMLHttpRequest()}
+      },
+      function() {
+        transport = new ActiveXObject('Msxml2.XMLHTTP');
+        return function(){ return new ActiveXObject('Msxml2.XMLHTTP')}
+      },
+      function() {
+        transport = new ActiveXObject('Microsoft.XMLHTTP');
+        return function(){ return new ActiveXObject('Microsoft.XMLHTTP')}
+      }
     ) || false;
+    
+    return transport;
   },
   
   activeRequestCount: 0
