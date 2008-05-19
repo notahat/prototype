@@ -3,6 +3,8 @@ new Test.Unit.Runner({
     this.assertEnumEqual([], (function() {}).argumentNames());
     this.assertEnumEqual(["one"], (function(one) {}).argumentNames());
     this.assertEnumEqual(["one", "two", "three"], (function(one, two, three) {}).argumentNames());
+    this.assertEnumEqual(["one", "two", "three"], (function(  one  , two 
+       , three   ) {}).argumentNames());
     this.assertEqual("$super", (function($super) {}).argumentNames().first());
     
     function named1() {};
@@ -191,6 +193,13 @@ new Test.Unit.Runner({
     this.assert(Object.isHash($H()));
     this.assert(Object.isHash(new Hash()));
     this.assert(!Object.isHash({}));
+    this.assert(!Object.isHash(null));
+    this.assert(!Object.isHash());
+    this.assert(!Object.isHash(''));
+    this.assert(!Object.isHash(2));
+    this.assert(!Object.isHash(false));
+    this.assert(!Object.isHash(true));
+    this.assert(!Object.isHash([]));
   },
   
   testObjectIsElement: function() {
