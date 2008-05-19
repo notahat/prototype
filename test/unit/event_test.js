@@ -122,6 +122,9 @@ new Test.Unit.Runner({
     this.assertEqual(0, count);
 
     this.assertEqual(window, Event.stopObserving(window));
+    
+    // test element with no observers
+    this.assertNothingRaised(function() { $(document.body).stopObserving() });
   },
   
   testStopObservingWithoutHandlerArgument: function() {
@@ -137,6 +140,9 @@ new Test.Unit.Runner({
     span.stopObserving("test:somethingElseHappened");
     span.fire("test:somethingElseHappened");
     this.assertEqual(1, count);
+    
+    // test element with no observers
+    this.assertNothingRaised(function() { $(document.body).stopObserving("test:somethingHappened") });
   },
   
   testStopObservingRemovesHandlerFromCache: function() {
