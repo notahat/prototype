@@ -48,12 +48,10 @@ if (!Node.ELEMENT_NODE) {
     attributes = attributes || { };
     tagName = tagName.toLowerCase();
     var cache = Element.cache;
-    if (Prototype.Browser.IE && (attributes.name || attributes.type)) {
-	  tagName = '<' + tagName +
-	    (attributes.name ? ' name="' + attributes.name + '"' : '') +
-	      (attributes.type ? ' type="' + attributes.type + '"' : '') + '>';
-	  delete attributes.name; delete attributes.type;
-	  return Element.writeAttribute(document.createElement(tagName), attributes);
+    if (Prototype.Browser.IE && attributes.name) {
+      tagName = '<' + tagName + ' name="' + attributes.name + '">';
+      delete attributes.name;
+      return Element.writeAttribute(document.createElement(tagName), attributes);
     }
     if (!cache[tagName]) cache[tagName] = Element.extend(document.createElement(tagName));
     return Element.writeAttribute(cache[tagName].cloneNode(false), attributes);
@@ -78,7 +76,7 @@ Element.Methods = {
   hide: function(element) {
     element = $(element);
     var originalDisplay = element.style.display;
-    if(originalDisplay && originalDisplay != 'none')
+    if (originalDisplay && originalDisplay != 'none')
       element._originalDisplay = originalDisplay;
     element.style.display = 'none';
     return element;
@@ -86,7 +84,7 @@ Element.Methods = {
   
   show: function(element) {
     element = $(element); 
-    if(element._originalDisplay) { 
+    if (element._originalDisplay) { 
       element.style.display = element._originalDisplay; 
       element._originalDisplay = null; 
  	} else element.style.display = '';
@@ -285,7 +283,7 @@ Element.Methods = {
     element = $(element);
     if (Prototype.Browser.IE) {
       var t = Element._attributeTranslations.read;
-      if(element.tagName.toUpperCase() == 'FORM' &&
+      if (element.tagName.toUpperCase() == 'FORM' &&
         !/^((child|parent)Node|(next|previous)Sibling)$/.test(name) &&
           element.children[name]){
         element = $(element.cloneNode(false));
@@ -927,7 +925,7 @@ else if (Prototype.Browser.WebKit) {
       (value < 0.00001) ? 0 : value;
     
     if (value == 1)
-      if(element.tagName.toUpperCase() == 'IMG' && element.width) { 
+      if (element.tagName.toUpperCase() == 'IMG' && element.width) { 
         element.width++; element.width--;
       } else try {
         var n = document.createTextNode(' ');

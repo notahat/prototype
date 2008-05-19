@@ -28,7 +28,7 @@ new Test.Unit.Runner({
         'document.body.offsetHeight', 'document.body.offsetWidth',
         'document.body.offsetTop', 'document.body.offsetLeft'
       ].inject([], function(properties, prop) {
-        if(!self.screen && prop.include('self.screen')) return;
+        if (!self.screen && prop.include('self.screen')) return;
         if (!document.body && prop.include('document.body')) return;
         properties.push(prop);
         if (prop.include('.body') && document.documentElement)
@@ -869,7 +869,7 @@ new Test.Unit.Runner({
     $('op3').setStyle({opacity: 0});
     this.assertEqual(0, $('op3').getStyle('opacity'));
     
-    if(navigator.appVersion.match(/MSIE/)) {
+    if (navigator.appVersion.match(/MSIE/)) {
       this.assertEqual('alpha(opacity=30)', $('op1').getStyle('filter'));
       this.assertEqual('progid:DXImageTransform.Microsoft.Blur(strength=10)alpha(opacity=30)', $('op2').getStyle('filter'));
       $('op2').setStyle({opacity:''});
@@ -887,12 +887,12 @@ new Test.Unit.Runner({
     // margin, padding, or borders
     // TODO: This test fails on IE because there seems to be no way
     // to calculate this properly (clientWidth/Height returns 0)
-    if(!navigator.appVersion.match(/MSIE/)) {
+    if (!navigator.appVersion.match(/MSIE/)) {
       this.assertEqual("14px", $('style_test_dimensions').getStyle('width'));
       this.assertEqual("17px", $('style_test_dimensions').getStyle('height'));
     }
     
-    // height/width should always be calculated if it's set to "auto" (Firefox)
+    // height/width could always be calculated if it's set to "auto" (Firefox)
     this.assertNotNull($('auto_dimensions').getStyle('height'));
     this.assertNotNull($('auto_dimensions').getStyle('width'));
   },
@@ -1070,18 +1070,6 @@ new Test.Unit.Runner({
       Element.prototype.fooBar = Prototype.emptyFunction
       this.assertRespondsTo('fooBar', new Element('div'));
     }
-    
-    //test IE setting "type" property of newly created button element
-    var button = new Element('button', {id:'button_type_test',type: 'reset'}); 
- 	var form   = $('attributes_with_issues_form');   
- 	var input  = $('attributes_with_issues_regular');    
- 	
- 	form.insert(button); 
- 	input.value = 1; 
- 	button.click();
- 	
- 	this.assertEqual('0', input.value);
- 	button.remove();
   },
 
   testElementGetHeight: function() {
