@@ -1,3 +1,19 @@
+* Ensure String#escapeHTML escapes double quotes. (jddalton)
+
+* Fix String#escapeHTML and String#unescapeHTML to ensure more consistent output. (jddalton, Tobie Langel)
+
+* Fix issue with how IE wrappers.dispatcher iterates over list of wrappers. (jddalton)
+
+* Fix String#extractScripts so that it doesn't return scripts that are commented out. (jddalton)
+
+* Fix scriptFragment Safari bug with non-ASCII characters in scripts. (jddalton)
+
+* Fix Element#viewportOffset and Element#getOffsetParent errors in IE and Opera. (jddalton)
+
+* Ensure BUTTON elements are extended with Form.Element.Methods. (jddalton)
+
+* Element position methods now run the argument through $. (jddalton)
+
 * Make sure Event#stopObserving works when passed non-string value as an eventName. (kangax, jddalton, Andrew Dupont)
 
 * Use DOMContentLoaded in the recent versions of WebKit that support it. (jddalton, Andrew Dupont)
