@@ -1,3 +1,15 @@
+* Make sure Event#stopObserving works when passed non-string value as an eventName. (kangax, jddalton, Andrew Dupont)
+
+* Use DOMContentLoaded in the recent versions of WebKit that support it. (jddalton, Andrew Dupont)
+
+* Many minor cleanups in event.js. (jddalton)
+
+* Clean up event.js — renaming some confusing or contradictory variable names and making consistent use of double quotes. (jddalton)
+
+* Set document.loaded = true before firing dom:loaded custom event. (jddalton)
+
+* Fix Event.stopObserving() IE error on elements with no observers. (jddalton)
+
 * Avoid potential memory leaks in Firefox. (wpc, Tobie Langel) [#12 state:resolved]
 
 * More unit tests for Object.isHash. (Tobie Langel)
