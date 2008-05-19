@@ -412,8 +412,8 @@ Object.extend(document, {
     }
   }
   
-  // Only WebKit nightly builds support DOMContentLoaded
-  if (Prototype.Browser.WebKit) {
+  // WebKit builds lower than 525.13 don't support DOMContentLoaded
+  if (Prototype.Browser.WebKit && (navigator.userAgent.match(/AppleWebKit\/(\d+)/)[1] < 525)) {
     timer = setInterval(function() {
       if (/loaded|complete/.test(document.readyState) &&
           document.styleSheets.length == $$('style, link[rel="stylesheet"]').length)
