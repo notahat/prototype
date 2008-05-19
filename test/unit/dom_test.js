@@ -1070,6 +1070,18 @@ new Test.Unit.Runner({
       Element.prototype.fooBar = Prototype.emptyFunction
       this.assertRespondsTo('fooBar', new Element('div'));
     }
+    
+    //test IE setting "type" property of newly created button element
+    var button = new Element('button', {id:'button_type_test',type: 'reset'}); 
+ 	var form   = $('attributes_with_issues_form');   
+ 	var input  = $('attributes_with_issues_regular');    
+ 	
+ 	form.insert(button); 
+ 	input.value = 1; 
+ 	button.click();
+ 	
+ 	this.assertEqual('0', input.value);
+ 	button.remove();
   },
 
   testElementGetHeight: function() {
