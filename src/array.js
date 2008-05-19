@@ -78,10 +78,13 @@ Object.extend(Array.prototype, {
     });
   },
   
-  intersect: function(array) { 
-    return this.uniq().findAll(function(item) { 
-      return array.detect(function(value) { return item === value });
-    }); 
+  intersect: function(array) {
+    var length = array.length, i;
+    return this.uniq().findAll(function(item) {
+      i = length;
+      while(i) if (item === array[--i]) return true;
+      return false;
+    });
   },
   
   clone: function() {
