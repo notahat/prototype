@@ -1,3 +1,7 @@
+* Ensure IE el.readAttribute('id') behaves properly when child element has id="id" or name="id". (jddalton) [#89 state:resolved] 
+
+* Stop Form.Element.disable from stealing focus. (jddalton)
+
 * Ensure String#escapeHTML escapes double quotes. (jddalton)
 
 * Fix String#escapeHTML and String#unescapeHTML to ensure more consistent output. (jddalton, Tobie Langel)
