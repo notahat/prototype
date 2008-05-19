@@ -1,3 +1,17 @@
+* Fix issue where Ajax.Request does not work with local files in IE7. (jddalton)
+
+* Ensure Array#intersect returns correct result if intersect value is 0. (jddalton)
+
+* Preserve inline display styles when showing/hiding an element. (jddalton)
+
+* Allow query parameters for any HTTP method. (jddalton)
+
+* Form.Element.getValue should return null on unknown/unsupported elements. (jddalton)
+
+* Ensure Element.hide and Element.show return an element, even if you pass an element ID. (jddalton)
+
+* Fix issue where setting type attribute for button element in Element constructor fails in IE. (jddalton)
+
 * Ensure IE el.readAttribute('id') behaves properly when child element has id="id" or name="id". (jddalton) [#89 state:resolved] 
 
 * Stop Form.Element.disable from stealing focus. (jddalton)
