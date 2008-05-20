@@ -71,7 +71,7 @@ Event.simulateKey = function(element, eventName) {
 };
 
 Event.simulateKeys = function(element, command) {
-  if (var i=0; i<command.length; i++) {
+  for (var i=0; i<command.length; i++) {
     Event.simulateKey(element,'keypress',{charCode:command.charCodeAt(i)});
   }
 };
