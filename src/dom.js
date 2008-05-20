@@ -953,15 +953,6 @@ else if (Prototype.Browser.IE) {
       })
     });
   })(Element._attributeTranslations.read.values);
-
-  // Wrap Element#update to clean up event handlers on 
-  // newly-removed elements. Prevents memory leaks in IE.  
-  Element.Methods.update = Element.Methods.update.wrap(
-    function(proceed, element, contents) {
-      Element.select(element, '*').each(Event.stopObserving);
-      return proceed(element, contents);
-    }
-  );  
 }
 
 else if (Prototype.Browser.Gecko && /rv:1\.8\.0/.test(navigator.userAgent)) {
@@ -1031,6 +1022,17 @@ if (Prototype.Browser.IE || Prototype.Browser.Opera) {
     content.evalScripts.bind(content).defer();
     return element;
   };
+}
+
+if (Prototype.Browser.IE) {
+  // Wrap Element#update to clean up event handlers on 
+  // newly-removed elements. Prevents memory leaks in IE.  
+  Element.Methods.update = Element.Methods.update.wrap(
+    function(proceed, element, contents) {
+      Element.select(element, '*').each(Event.stopObserving);
+      return proceed(element, contents);
+    }
+  );  
 }
 
 if ('outerHTML' in document.createElement('div')) {
