@@ -82,7 +82,7 @@ Object.extend(Array.prototype, {
     var length = array.length, i;
     return this.uniq().findAll(function(item) {
       i = length;
-      while (i) if (item === array[--i]) return true;
+      while (i--) if (item === array[i]) return true;
       return false;
     });
   },
