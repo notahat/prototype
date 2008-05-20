@@ -610,12 +610,14 @@ Element.Methods = {
 
   cumulativeScrollOffset: function(element) {
     element = $(element);
-    var valueT = 0, valueL = 0;
+    var valueT = 0, valueL = 0,
+    endElement = (Prototype.Browser.Opera && opera.version() < 9.5) ? document.documentElement : document;
+    
     do {
       valueT += element.scrollTop  || 0;
-      valueL += element.scrollLeft || 0; 
-      element = element.parentNode;
-    } while (element);
+      valueL += element.scrollLeft || 0;
+    } while ((element = element.parentNode) && element != endElement);
+    
     return Element._returnOffset(valueL, valueT);
   },
   
