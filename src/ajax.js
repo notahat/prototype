@@ -90,53 +90,69 @@ Ajax.Request = Class.create(Ajax.Base, {
     this.request(url);
   },
 
-  request: function(url) {
-    this.url = url;
-    this.method = this.options.method;
-    var params = Object.clone(this.options.parameters);
-    this.allowStatusZero = /^(file|ftp):/.test(this.url) || 
-      (!/^(file|ftp|https?):/.test(this.url) && /^(file|ftp):/.test(window.location.protocol));      
-
-    if (!['get', 'post'].include(this.method)) {
-      // simulate other verbs over post
-      params['_method'] = this.method;
-      this.method = 'post';
+  request: (function() {
+    
+    var absoluteExp = /^[a-z]{3,5}:/, fileExp = /^(file|ftp):/;
+    function isRelative(url) {
+      return !absoluteExp.test(url);
     }
     
-    this.parameters = params;
-
-    if (params = Object.toQueryString(params)) {
-      this.url += (this.url.include('?') ? '&' : '?') + params;
-      if (this.method == 'post' &&
-          /Konqueror|Safari|KHTML/.test(navigator.userAgent))
-        params += '&_=';
+    function isFileProtocol(url) {
+      return fileExp.test(url);
     }
-      
-    try {
-      var response = new Ajax.Response(this);
-      if (this.options.onCreate) this.options.onCreate(response);
-      Ajax.Responders.dispatch('onCreate', this, response);
     
-      this.transport.open(this.method.toUpperCase(), this.url, 
-        this.options.asynchronous);
-
-      if (this.options.asynchronous) this.respondToReadyState.bind(this).defer(1);
+    return function(url) {
+      var base;
+      if (Prototype.Browser.Opera && opera.version() < 9.5 &&
+          isRelative(url) && (base = $(document.documentElement).down('base')))
+        url = base.readAttribute('href') + url;
       
-      this.transport.onreadystatechange = this.onStateChange.bind(this);
-      this.setRequestHeaders();
+      this.url = url;
+      this.method = this.options.method;
+      var params = Object.clone(this.options.parameters);
+      this.allowStatusZero = isFileProtocol(this.url) ||
+        (isRelative(url) && isFileProtocol(window.location.protocol));      
 
-      this.body = this.method == 'post' ? (this.options.postBody || params) : null;
-      this.transport.send(this.body);
+      if (!['get', 'post'].include(this.method)) {
+        // simulate other verbs over post
+        params['_method'] = this.method;
+        this.method = 'post';
+      }
+      
+      this.parameters = params;
 
-      /* Force Firefox to handle ready state 4 for synchronous requests */
-      if (!this.options.asynchronous && this.transport.overrideMimeType)
-        this.onStateChange();
+      if (params = Object.toQueryString(params)) {
+        this.url += (this.url.include('?') ? '&' : '?') + params;
+        if (this.method == 'post' &&
+            /Konqueror|Safari|KHTML/.test(navigator.userAgent))
+          params += '&_=';
+      }
+      
+      try {
+        var response = new Ajax.Response(this);
+        if (this.options.onCreate) this.options.onCreate(response);
+        Ajax.Responders.dispatch('onCreate', this, response);
         
+        this.transport.open(this.method.toUpperCase(), this.url, 
+          this.options.asynchronous);
+
+        if (this.options.asynchronous) this.respondToReadyState.bind(this).defer(1);
+
+        this.transport.onreadystatechange = this.onStateChange.bind(this);
+        this.setRequestHeaders();
+
+        this.body = this.method == 'post' ? (this.options.postBody || params) : null;
+        this.transport.send(this.body);
+
+        /* Force Firefox to handle ready state 4 for synchronous requests */
+        if (!this.options.asynchronous && this.transport.overrideMimeType)
+          this.onStateChange();
+      }
+      catch (e) {
+        this.dispatchException(e);
+      }
     }
-    catch (e) {
-      this.dispatchException(e);
-    }
-  },
+  })(),
 
   onStateChange: function() {
     var readyState = this.transport.readyState;
