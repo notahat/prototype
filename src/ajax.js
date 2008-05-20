@@ -60,6 +60,7 @@ Ajax.Responders.register({
 
 Ajax.Base = Class.create({
   initialize: function(options) {
+    this.allowStatusZero = false;
     this.options = {
       method:       'post',
       asynchronous: true,
@@ -93,6 +94,8 @@ Ajax.Request = Class.create(Ajax.Base, {
     this.url = url;
     this.method = this.options.method;
     var params = Object.clone(this.options.parameters);
+    this.allowStatusZero = /^(file|ftp):/.test(this.url) || 
+      (!/^(file|ftp|https?):/.test(this.url) && /^(file|ftp):/.test(window.location.protocol));      
 
     if (!['get', 'post'].include(this.method)) {
       // simulate other verbs over post
@@ -178,7 +181,7 @@ Ajax.Request = Class.create(Ajax.Base, {
   
   success: function() {
     var status = this.getStatus();
-    return !status || (status >= 200 && status < 300);
+    return (!status && this.allowStatusZero) || (status >= 200 && status < 300);
   },
     
   getStatus: function() {
