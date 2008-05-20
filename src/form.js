@@ -139,15 +139,15 @@ Form.Element.Methods = {
   },
   
   getValue: function(element) {
-    if(!(element = $(element))) return null;
+    if (!(element = $(element))) return null;
     var method = element.tagName.toLowerCase(), s = Form.Element.Serializers;
     return s[method]? s[method](element) : null;
   },
 
   setValue: function(element, value) {
-    if(!(element = $(element))) return null;
+    if (!(element = $(element))) return null;
     var method = element.tagName.toLowerCase(), s = Form.Element.Serializers;
-    if(s[method]) s[method](element, value);
+    if (s[method]) s[method](element, value);
     return element;
   },
 
