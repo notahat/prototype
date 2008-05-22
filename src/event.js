@@ -172,7 +172,7 @@ Object.extend(Event, (function() {
       for(var i = 0, l = w.length; i < l; i++) w[i](event); // execute wrappers
     };
 
-    if(dispatchWrapper) wrappers.dispatcher = wrappers.dispatcher.wrap(dispatchWrapper);
+    if (dispatchWrapper) wrappers.dispatcher = wrappers.dispatcher.wrap(dispatchWrapper);
     element.attachEvent("on" + getDOMEventName(eventName), wrappers.dispatcher);
   }
   
@@ -252,7 +252,7 @@ Object.extend(Event, (function() {
     
     // Ensure window onload is fired after "dom:loaded"
     addEventDispatcher(window, 'load', function(proceed, event) {
-    	if (document.loaded){
+    	if (document.loaded) {
     	  proceed(event);
     	} else {
     	  arguments.callee.defer(proceed, event);
@@ -262,7 +262,7 @@ Object.extend(Event, (function() {
     // Ensure window onresize is fired only once per resize
     addEventDispatcher(window, 'resize', function(proceed, event) {
       var callee = arguments.callee, dimensions = document.viewport.getDimensions();
-      if (dimensions.width != callee.prevWidth || dimensions.height != callee.prevHeight){
+      if (dimensions.width != callee.prevWidth || dimensions.height != callee.prevHeight) {
         callee.prevWidth  = dimensions.width;
         callee.prevHeight = dimensions.height;
         proceed(event);
@@ -301,12 +301,14 @@ Object.extend(Event, (function() {
 
       if (!c) {
         return element;
-      } else if (!handler && eventName) {
+      }
+      else if (!handler && eventName) {
         getWrappersForEventName(id, eventName).each(function(wrapper) {
           Event.stopObserving(element, eventName, wrapper.handler);
         });
         return element;
-      } else if (!eventName) {
+      }
+      else if (!eventName) {
         Object.keys(c).without("element").each(function(eventName) {
           Event.stopObserving(element, eventName);
         });
@@ -389,14 +391,7 @@ Object.extend(document, {
   }
   
   if (document.addEventListener) {
-    document.addEventListener("DOMContentLoaded", function() {
-      // Ensure all stylesheets are loaded, solves Opera issue
-      if (Prototype.Browser.Opera && 
-          $A(document.styleSheets).any(function(s) { return s.disabled }))
-        return arguments.callee.defer();
-      fireContentLoadedEvent();
-    }, false);
-    
+    document.addEventListener("DOMContentLoaded", fireContentLoadedEvent, false);
   } else {
     document.attachEvent("onreadystatechange", function() {
       if (document.readyState == "complete") {
@@ -418,8 +413,7 @@ Object.extend(document, {
   // WebKit builds lower than 525.13 don't support DOMContentLoaded
   if (Prototype.Browser.WebKit && (navigator.userAgent.match(/AppleWebKit\/(\d+)/)[1] < 525)) {
     timer = setInterval(function() {
-      if (/loaded|complete/.test(document.readyState) &&
-          document.styleSheets.length == $$('style, link[rel="stylesheet"]').length)
+      if (/loaded|complete/.test(document.readyState))
         fireContentLoadedEvent();
     }, 10);
   }
