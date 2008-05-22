@@ -141,7 +141,7 @@ Object.extend(Object, {
   },
   
   isFunction: function(object) {
-    return typeof object == "function";
+    return typeof object == "function" && typeof object.call == "function";
   },
   
   isString: function(object) {

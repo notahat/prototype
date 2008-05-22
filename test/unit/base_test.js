@@ -219,6 +219,8 @@ new Test.Unit.Runner({
     this.assert(!Object.isFunction(0));
     this.assert(!Object.isFunction(false));
     this.assert(!Object.isFunction(undefined));
+    this.assert(!Object.isFunction(/foo/));
+    this.assert(!Object.isFunction(document.getElementsByTagName('div')));
   },
   
   testObjectIsString: function() {

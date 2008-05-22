@@ -1,3 +1,5 @@
+* Fix Object.isFunction returning true for RegExp objects and NodeLists in WebKit. (kangax)
+
 * Fix issue where Ajax.Request does not work with local files in IE7. (jddalton)
 
 * Ensure Array#intersect returns correct result if intersect value is 0. (jddalton)
