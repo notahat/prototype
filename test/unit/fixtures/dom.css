@@ -67,29 +67,6 @@ div.style-test { margin-left: 1px }
   width: 20em;
 }
 
-.getDimensionsBox {
-  float: left;
-  clear: both;
-  width: 200px;
-  height: 200px;
-  background: #1d8bcb;
-}
-.getDimensionsBox div { float: left; }
-.getDimensionsBox .deep {
-  height: 150px;
-  width: 150px;
-  background: #21bacc;
-}
-.getDimensionsBox .deeper {
-  height: 130px;
-  width: 130px;
-  background: #94dee6;
-}
-.getDimensionsBox .deepest {
-  height: 100px;
-  width: 100px;
-  background: #cbeff3;
-}
 
 #notInlineAbsoluted { position: absolute; }
 
