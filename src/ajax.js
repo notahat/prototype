@@ -345,22 +345,6 @@ Ajax.Response = Class.create({
   }
 });
 
-if (Prototype.Browser.Gecko) {
-  // Fix for Firefox 1.5 cross sub-domain bug
-  (function(p) {
-    p.initialize = p.initialize.wrap(function(proceed, request) {
-      proceed(request);
-      var t = this.transport;
-      if (t.responseXML)
-        try {
-          t.responseXML.firstChild;
-        } catch (e) {
-          this.responseXML = (new DOMParser).parseFromString(t.responseText, "text/xml");
-        }
-    });
-  })(Ajax.Response.prototype);
-}
-
 Ajax.Updater = Class.create(Ajax.Request, {
   initialize: function($super, container, url, options) {
     this.container = {
