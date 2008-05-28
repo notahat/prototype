@@ -410,7 +410,8 @@ Object.extend(document, {
     }
   }
   
-  // WebKit builds lower than 525.13 don't support DOMContentLoaded
+  
+  // Safari <3.1 doesn't support DOMContentLoaded
   if (Prototype.Browser.WebKit && (navigator.userAgent.match(/AppleWebKit\/(\d+)/)[1] < 525)) {
     timer = setInterval(function() {
       if (/loaded|complete/.test(document.readyState))

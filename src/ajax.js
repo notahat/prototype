@@ -83,6 +83,7 @@ Ajax.Base = Class.create({
 
 Ajax.Request = Class.create(Ajax.Base, {
   _complete: false,
+  _allowStatusZero: false,
   
   initialize: function($super, url, options) {
     $super(options);
@@ -110,7 +111,7 @@ Ajax.Request = Class.create(Ajax.Base, {
       this.url = url;
       this.method = this.options.method;
       var params = Object.clone(this.options.parameters);
-      this.allowStatusZero = isFileProtocol(this.url) ||
+      this._allowStatusZero = isFileProtocol(this.url) ||
         (isRelative(url) && isFileProtocol(window.location.protocol));      
 
       if (!['get', 'post'].include(this.method)) {
@@ -197,7 +198,7 @@ Ajax.Request = Class.create(Ajax.Base, {
   
   success: function() {
     var status = this.getStatus();
-    return (!status && this.allowStatusZero) || (status >= 200 && status < 300);
+    return (!status && this._allowStatusZero) || (status >= 200 && status < 300);
   },
     
   getStatus: function() {
