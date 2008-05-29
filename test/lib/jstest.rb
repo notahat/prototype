@@ -426,17 +426,17 @@ class TestSuiteResults
   end
 end
 
-class TestBuilder
-  UNITTEST_DIR = File.expand_path('test')
-  FIXTURES_DIR = File.join(UNITTEST_DIR, 'unit', 'fixtures')
-  TMP_DIR      = File.join(UNITTEST_DIR, 'unit', 'tmp')
-  TEMPLATE     = File.join(UNITTEST_DIR, 'lib', 'template.erb')
+class PageBuilder
+  UNITTEST_DIR  = File.expand_path('test')
+  FIXTURES_DIR  = File.join(UNITTEST_DIR, 'unit', 'fixtures')
+  TMP_DIR       = File.join(UNITTEST_DIR, 'unit', 'tmp')
+  TEMPLATES_DIR = File.join(UNITTEST_DIR, 'lib', 'templates')
   
-  def initialize(filename, template = TEMPLATE)
+  def initialize(filename, template = 'default.erb')
     @filename          = filename
-    @template          = template
+    @template          = File.join(TEMPLATES_DIR, template)
     @js_filename       = File.basename(@filename)
-    @basename          = @js_filename.sub("_test.js", "")
+    @basename          = @js_filename.sub('_test.js', '')
   end
   
   def html_fixtures
@@ -452,18 +452,19 @@ class TestBuilder
   end
   
   def render
-    @title                 = @basename.gsub("_", " ").strip.capitalize
+    @title                 = @basename.gsub('_', ' ').strip.capitalize
     @html_fixtures         = html_fixtures
-    @js_fixtures_filename  = external_fixtures("js")
-    @css_fixtures_filename = external_fixtures("css")
+    @js_fixtures_filename  = external_fixtures('js')
+    @css_fixtures_filename = external_fixtures('css')
     
-    File.open(destination, "w+") do |file|
-      file << ERB.new(IO.read(@template), nil, "%").result(binding)
+    File.open(destination, 'w+') do |file|
+      file << ERB.new(IO.read(@template), nil, '%').result(binding)
     end
   end
   
   def destination
-    filename = File.basename(@filename, ".js")
+    filename = File.basename(@filename, '.js')
     File.join(TMP_DIR, "#{filename}.html")
   end
 end
+

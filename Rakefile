@@ -62,7 +62,7 @@ JavaScriptTestTask.new(:test_units) do |t|
   Dir.mkdir(tmp_dir) unless File.exist?(tmp_dir)
   
   Dir["test/unit/*_test.js"].each do |file|
-    TestBuilder.new(file).render
+    PageBuilder.new(file, 'prototype.erb').render
     test_file = File.basename(file, ".js")
     test_name = test_file.sub("_test", "")
     unless tests_to_run && !tests_to_run.include?(test_name)
