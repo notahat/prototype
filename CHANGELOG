@@ -1,4 +1,6 @@
-* Ensure deprecated Position object methods use Element#getDimensions.  [jddalton]
+* Fix exiting test task on INT signal. (Samuel Lebeau)
+
+* Ensure deprecated Position object methods use Element#getDimensions. (jddalton)
 
 * Fix unit test freeze in IE. (Tobie Langel)
 
