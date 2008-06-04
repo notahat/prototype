@@ -861,7 +861,8 @@ else if (Prototype.Browser.IE) {
         // accurate offsetTop and offsetLeft values for position: fixed.
         var offsetParent = Element.getOffsetParent(element),
          style = { position: 'relative' }; 
-        if (Element.getStyle(offsetParent, 'position') === 'fixed')
+        if (Element.getStyle(offsetParent, 'position') === 'fixed'
+         && !offsetParent.currentStyle.hasLayout)
           style.zoom = '1';
         
         Element.setStyle(element, style);
