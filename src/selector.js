@@ -466,7 +466,7 @@ Object.extend(Selector, {
         if (Prototype.Browser.IE && (root.sourceIndex < 1 || root === document)) {
           var nodes = root.getElementsByTagName('*');
           for (var i = 0, node; node = nodes[i]; i++) {
-            if (node[id] = id) {
+            if (node[id] === id) {
               targetNode = node; break;
             }
           } if (!targetNode) return [];
