@@ -16,8 +16,6 @@
 
 * Ensure Array#intersect returns correct result if intersect value is 0. (jddalton)
 
-* Preserve inline display styles when showing/hiding an element. (jddalton)
-
 * Allow query parameters for any HTTP method. (jddalton)
 
 * Form.Element.getValue should return null on unknown/unsupported elements. (jddalton, tdd)

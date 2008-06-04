@@ -76,20 +76,12 @@ Element.Methods = {
   },
 
   hide: function(element) {
-    element = $(element);
-    var originalDisplay = element.style.display;
-    if (originalDisplay && originalDisplay != 'none')
-      element._originalDisplay = originalDisplay;
-    element.style.display = 'none';
+    (element = $(element)).style.display = 'none';
     return element;
   },
   
   show: function(element) {
-    element = $(element); 
-    if (element._originalDisplay) { 
-      element.style.display = element._originalDisplay; 
-      element._originalDisplay = null; 
- 	} else element.style.display = '';
+    (element = $(element)).style.display = '';
     return element;
   },
 
