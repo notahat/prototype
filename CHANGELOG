@@ -1,4 +1,6 @@
-* Ensure Object.isElement handles "falsy" values properly. (kangax)
+* Ensure Object.isNumber checks that the number is finite (rather than NaN or +/-Infinity). (jddalton)
+
+* Ensure Object.isElement and Object.isHash handle "falsy" values properly. (kangax)
 
 * Fix exiting test task on INT signal. (Samuel Lebeau)
 
