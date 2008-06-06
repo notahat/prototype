@@ -1,32 +1,18 @@
 var Ajax = {
   getTransport: function() {
-    var transport = false;
-    Ajax.getTransport = Try.these(
-      function() {
-        /* fallback on activex xmlhttp to avoid IE7 local file-system read error */
-        if (Prototype.Browser.IE && window.location.href.indexOf('file://') == 0) throw 'skip';
-        transport = new XMLHttpRequest();
-        return function(){ return new XMLHttpRequest()}
-      },
-      function() {
-        transport = new ActiveXObject('Msxml2.XMLHTTP');
-        return function(){ return new ActiveXObject('Msxml2.XMLHTTP')}
-      },
-      function() {
-        transport = new ActiveXObject('Microsoft.XMLHTTP');
-        return function(){ return new ActiveXObject('Microsoft.XMLHTTP')}
-      }
+    return Try.these(
+      function() {return new ActiveXObject('Msxml2.XMLHTTP')},
+      function() {return new ActiveXObject('Microsoft.XMLHTTP')}
+      function() {return new XMLHttpRequest()},
     ) || false;
-    
-    return transport;
   },
-  
+
   activeRequestCount: 0
 };
 
 Ajax.Responders = {
   responders: [],
-  
+
   _each: function(iterator) {
     this.responders._each(iterator);
   },
@@ -35,11 +21,11 @@ Ajax.Responders = {
     if (!this.include(responder))
       this.responders.push(responder);
   },
-  
+
   unregister: function(responder) {
     this.responders = this.responders.without(responder);
   },
-  
+
   dispatch: function(callback, request, transport, json) {
     this.each(function(responder) {
       if (Object.isFunction(responder[callback])) {
@@ -54,13 +40,12 @@ Ajax.Responders = {
 Object.extend(Ajax.Responders, Enumerable);
 
 Ajax.Responders.register({
-  onCreate:   function() { Ajax.activeRequestCount++ }, 
+  onCreate:   function() { Ajax.activeRequestCount++ },
   onComplete: function() { Ajax.activeRequestCount-- }
 });
 
 Ajax.Base = Class.create({
   initialize: function(options) {
-    this.allowStatusZero = false;
     this.options = {
       method:       'post',
       asynchronous: true,
@@ -71,10 +56,10 @@ Ajax.Base = Class.create({
       evalJS:       true
     };
     Object.extend(this.options, options || { });
-    
+
     this.options.method = this.options.method.toLowerCase();
-    
-    if (Object.isString(this.options.parameters)) 
+
+    if (Object.isString(this.options.parameters))
       this.options.parameters = this.options.parameters.toQueryParams();
     else if (Object.isHash(this.options.parameters))
       this.options.parameters = this.options.parameters.toObject();
@@ -83,84 +68,66 @@ Ajax.Base = Class.create({
 
 Ajax.Request = Class.create(Ajax.Base, {
   _complete: false,
-  _allowStatusZero: false,
-  
+
   initialize: function($super, url, options) {
     $super(options);
     this.transport = Ajax.getTransport();
     this.request(url);
   },
 
-  request: (function() {
-    
-    var absoluteExp = /^[a-z]{3,5}:/, fileExp = /^(file|ftp):/;
-    function isRelative(url) {
-      return !absoluteExp.test(url);
-    }
-    
-    function isFileProtocol(url) {
-      return fileExp.test(url);
-    }
-    
-    return function(url) {
-      var base;
-      if (Prototype.Browser.Opera && opera.version() < 9.5 &&
-          isRelative(url) && (base = $(document.documentElement).down('base')))
-        url = base.readAttribute('href') + url;
-      
-      this.url = url;
-      this.method = this.options.method;
-      var params = Object.clone(this.options.parameters);
-      this._allowStatusZero = isFileProtocol(this.url) ||
-        (isRelative(url) && isFileProtocol(window.location.protocol));      
+  request: function(url) {
+    this.url = url;
+    this.method = this.options.method;
+    var params = Object.clone(this.options.parameters);
 
-      if (!['get', 'post'].include(this.method)) {
-        // simulate other verbs over post
-        params['_method'] = this.method;
-        this.method = 'post';
-      }
-      
-      this.parameters = params;
+    if (!['get', 'post'].include(this.method)) {
+      // simulate other verbs over post
+      params['_method'] = this.method;
+      this.method = 'post';
+    }
 
-      if (params = Object.toQueryString(params)) {
+    this.parameters = params;
+
+    if (params = Object.toQueryString(params)) {
+      // when GET, append parameters to URL
+      if (this.method == 'get')
         this.url += (this.url.include('?') ? '&' : '?') + params;
-        if (this.method == 'post' &&
-            /Konqueror|Safari|KHTML/.test(navigator.userAgent))
-          params += '&_=';
-      }
-      
-      try {
-        var response = new Ajax.Response(this);
-        if (this.options.onCreate) this.options.onCreate(response);
-        Ajax.Responders.dispatch('onCreate', this, response);
-        
-        this.transport.open(this.method.toUpperCase(), this.url, 
-          this.options.asynchronous);
-
-        if (this.options.asynchronous) this.respondToReadyState.bind(this).defer(1);
-
-        this.transport.onreadystatechange = this.onStateChange.bind(this);
-        this.setRequestHeaders();
-
-        this.body = this.method == 'post' ? (this.options.postBody || params) : null;
-        this.transport.send(this.body);
-
-        /* Force Firefox to handle ready state 4 for synchronous requests */
-        if (!this.options.asynchronous && this.transport.overrideMimeType)
-          this.onStateChange();
-      }
-      catch (e) {
-        this.dispatchException(e);
-      }
+      else if (/Konqueror|Safari|KHTML/.test(navigator.userAgent))
+        params += '&_=';
     }
-  })(),
+
+    try {
+      var response = new Ajax.Response(this);
+      if (this.options.onCreate) this.options.onCreate(response);
+      Ajax.Responders.dispatch('onCreate', this, response);
+
+      this.transport.open(this.method.toUpperCase(), this.url,
+        this.options.asynchronous);
+
+      if (this.options.asynchronous) this.respondToReadyState.bind(this).defer(1);
+
+      this.transport.onreadystatechange = this.onStateChange.bind(this);
+      this.setRequestHeaders();
+
+      this.body = this.method == 'post' ? (this.options.postBody || params) : null;
+      this.transport.send(this.body);
+
+      /* Force Firefox to handle ready state 4 for synchronous requests */
+      if (!this.options.asynchronous && this.transport.overrideMimeType)
+        this.onStateChange();
+
+    }
+    catch (e) {
+      this.dispatchException(e);
+    }
+  },
 
   onStateChange: function() {
     var readyState = this.transport.readyState;
     if (readyState > 1 && !((readyState == 4) && this._complete))
       this.respondToReadyState(this.transport.readyState);
   },
-  
+
   setRequestHeaders: function() {
     var headers = {
       'X-Requested-With': 'XMLHttpRequest',
@@ -171,42 +138,42 @@ Ajax.Request = Class.create(Ajax.Base, {
     if (this.method == 'post') {
       headers['Content-type'] = this.options.contentType +
         (this.options.encoding ? '; charset=' + this.options.encoding : '');
-      
+
       /* Force "Connection: close" for older Mozilla browsers to work
        * around a bug where XMLHttpRequest sends an incorrect
-       * Content-length header. See Mozilla Bugzilla #246651. 
+       * Content-length header. See Mozilla Bugzilla #246651.
        */
       if (this.transport.overrideMimeType &&
           (navigator.userAgent.match(/Gecko\/(\d{4})/) || [0,2005])[1] < 2005)
             headers['Connection'] = 'close';
     }
-    
+
     // user-defined headers
     if (typeof this.options.requestHeaders == 'object') {
       var extras = this.options.requestHeaders;
 
       if (Object.isFunction(extras.push))
-        for (var i = 0, length = extras.length; i < length; i += 2) 
+        for (var i = 0, length = extras.length; i < length; i += 2)
           headers[extras[i]] = extras[i+1];
       else
         $H(extras).each(function(pair) { headers[pair.key] = pair.value });
     }
 
-    for (var name in headers) 
+    for (var name in headers)
       this.transport.setRequestHeader(name, headers[name]);
   },
-  
+
   success: function() {
     var status = this.getStatus();
-    return (!status && this._allowStatusZero) || (status >= 200 && status < 300);
+    return !status || (status >= 200 && status < 300);
   },
-    
+
   getStatus: function() {
     try {
       return this.transport.status || 0;
-    } catch (e) { return 0 } 
+    } catch (e) { return 0 }
   },
-  
+
   respondToReadyState: function(readyState) {
     var state = Ajax.Request.Events[readyState], response = new Ajax.Response(this);
 
@@ -219,10 +186,10 @@ Ajax.Request = Class.create(Ajax.Base, {
       } catch (e) {
         this.dispatchException(e);
       }
-      
+
       var contentType = response.getHeader('Content-type');
       if (this.options.evalJS == 'force'
-          || (this.options.evalJS && this.isSameOrigin() && contentType 
+          || (this.options.evalJS && this.isSameOrigin() && contentType
           && contentType.match(/^\s*(text|application)\/(x-)?(java|ecma)script(;.*)?\s*$/i)))
         this.evalResponse();
     }
@@ -233,13 +200,13 @@ Ajax.Request = Class.create(Ajax.Base, {
     } catch (e) {
       this.dispatchException(e);
     }
-    
+
     if (state == 'Complete') {
       // avoid memory leak in MSIE: clean up
       this.transport.onreadystatechange = Prototype.emptyFunction;
     }
   },
-  
+
   isSameOrigin: function() {
     var m = this.url.match(/^\s*https?:\/\/[^\/]*/);
     return !m || (m[0] == '#{protocol}//#{domain}#{port}'.interpolate({
@@ -248,13 +215,13 @@ Ajax.Request = Class.create(Ajax.Base, {
       port: location.port ? ':' + location.port : ''
     }));
   },
-  
+
   getHeader: function(name) {
     try {
       return this.transport.getResponseHeader(name) || null;
     } catch (e) { return null }
   },
-  
+
   evalResponse: function() {
     try {
       return eval((this.transport.responseText || '').unfilterJSON());
@@ -269,7 +236,7 @@ Ajax.Request = Class.create(Ajax.Base, {
   }
 });
 
-Ajax.Request.Events = 
+Ajax.Request.Events =
   ['Uninitialized', 'Loading', 'Loaded', 'Interactive', 'Complete'];
 
 Ajax.Response = Class.create({
@@ -291,34 +258,34 @@ Ajax.Response = Class.create({
       this.responseJSON = this._getResponseJSON();
     }
   },
-  
+
   status:      0,
   statusText: '',
-  
+
   getStatus: Ajax.Request.prototype.getStatus,
-  
+
   getStatusText: function() {
     try {
       return this.transport.statusText || '';
     } catch (e) { return '' }
   },
-  
+
   getHeader: Ajax.Request.prototype.getHeader,
-  
+
   getAllHeaders: function() {
     try {
       return this.getAllResponseHeaders();
-    } catch (e) { return null } 
+    } catch (e) { return null }
   },
-  
+
   getResponseHeader: function(name) {
     return this.transport.getResponseHeader(name);
   },
-  
+
   getAllResponseHeaders: function() {
     return this.transport.getAllResponseHeaders();
   },
-  
+
   _getHeaderJSON: function() {
     var json = this.getHeader('X-JSON');
     if (!json) return null;
@@ -330,11 +297,11 @@ Ajax.Response = Class.create({
       this.request.dispatchException(e);
     }
   },
-  
+
   _getResponseJSON: function() {
     var options = this.request.options;
-    if (!options.evalJSON || (options.evalJSON != 'force' && 
-      !(this.getHeader('Content-type') || '').include('application/json')) || 
+    if (!options.evalJSON || (options.evalJSON != 'force' &&
+      !(this.getHeader('Content-type') || '').include('application/json')) ||
         this.responseText.blank())
           return null;
     try {
@@ -364,11 +331,11 @@ Ajax.Updater = Class.create(Ajax.Request, {
   },
 
   updateContent: function(responseText) {
-    var receiver = this.container[this.success() ? 'success' : 'failure'], 
-        options = this.options;
-    
+    var receiver = this.container[this.success() ? 'success' : 'failure'],
+     options = this.options;
+
     if (!options.evalScripts) responseText = responseText.stripScripts();
-    
+
     if (receiver = $(receiver)) {
       if (options.insertion) {
         if (Object.isString(options.insertion)) {
@@ -376,7 +343,7 @@ Ajax.Updater = Class.create(Ajax.Request, {
           receiver.insert(insertion);
         }
         else options.insertion(receiver, responseText);
-      } 
+      }
       else receiver.update(responseText);
     }
   }
@@ -389,7 +356,7 @@ Ajax.PeriodicalUpdater = Class.create(Ajax.Base, {
 
     this.frequency = (this.options.frequency || 2);
     this.decay = (this.options.decay || 1);
-    
+
     this.updater = { };
     this.container = container;
     this.url = url;
@@ -410,7 +377,7 @@ Ajax.PeriodicalUpdater = Class.create(Ajax.Base, {
 
   updateComplete: function(response) {
     if (this.options.decay) {
-      this.decay = (response.responseText == this.lastText ? 
+      this.decay = (response.responseText == this.lastText ?
         this.decay * this.options.decay : 1);
 
       this.lastText = response.responseText;
