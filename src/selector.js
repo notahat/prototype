@@ -466,7 +466,7 @@ Object.extend(Selector, {
         if (Prototype.Browser.IE && (root.sourceIndex < 1 || root === document)) {
           var nodes = root.getElementsByTagName('*');
           for (var i = 0, node; node = nodes[i]; i++) {
-            if (node[id] === id) {
+            if (node.id === id) {
               targetNode = node; break;
             }
           } if (!targetNode) return [];
@@ -671,8 +671,6 @@ Object.extend(Selector, {
     '^=': function(nv, v) { return nv == v || nv && nv.startsWith(v); },
     '$=': function(nv, v) { return nv == v || nv && nv.endsWith(v); },
     '*=': function(nv, v) { return nv == v || nv && nv.include(v); },
-    '$=': function(nv, v) { return nv.endsWith(v); },
-    '*=': function(nv, v) { return nv.include(v); },
     '~=': function(nv, v) { return (' ' + nv + ' ').include(' ' + v + ' '); },
     '|=': function(nv, v) { return ('-' + (nv || "").toUpperCase() +
      '-').include('-' + (v || "").toUpperCase() + '-'); }
