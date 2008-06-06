@@ -163,19 +163,6 @@ Object.extend(Event, (function() {
     return cache[id] = cache[id] || { };
   }
   
-  function addEventDispatcher(element, eventName, dispatchWrapper) {
-    var id = getEventID(element), wrappers = getWrappersForEventName(id, eventName);
-    if (wrappers.dispatcher) return;
-
-    wrappers.dispatcher = function(event) {
-      var w = getWrappersForEventName(id, eventName);
-      for(var i = 0, l = w.length; i < l; i++) w[i](event); // execute wrappers
-    };
-
-    if (dispatchWrapper) wrappers.dispatcher = wrappers.dispatcher.wrap(dispatchWrapper);
-    element.attachEvent("on" + getDOMEventName(eventName), wrappers.dispatcher);
-  }
-  
   function getWrappersForEventName(id, eventName) {
     var c = getCacheForID(id);
     return c[eventName] = c[eventName] || [];
@@ -212,9 +199,7 @@ Object.extend(Event, (function() {
   function destroyWrapper(id, eventName, handler) {
     var c = getCacheForID(id);
     if (!c[eventName]) return false;
-    var d = c[eventName].dispatcher;
     c[eventName] = c[eventName].without(findWrapper(id, eventName, handler));
-    c[eventName].dispatcher = d;
   }
   
   // Loop through all elements and remove all handlers on page unload. IE
@@ -249,25 +234,6 @@ Object.extend(Event, (function() {
     // from before it's done loading. Workaround adapted from
     // http://blog.moxiecode.com/2008/04/08/unload-event-never-fires-in-ie/.
     window.attachEvent("onbeforeunload", onBeforeUnload);
-    
-    // Ensure window onload is fired after "dom:loaded"
-    addEventDispatcher(window, 'load', function(proceed, event) {
-    	if (document.loaded) {
-    	  proceed(event);
-    	} else {
-    	  arguments.callee.defer(proceed, event);
-    	}
-    });
-    
-    // Ensure window onresize is fired only once per resize
-    addEventDispatcher(window, 'resize', function(proceed, event) {
-      var callee = arguments.callee, dimensions = document.viewport.getDimensions();
-      if (dimensions.width != callee.prevWidth || dimensions.height != callee.prevHeight) {
-        callee.prevWidth  = dimensions.width;
-        callee.prevHeight = dimensions.height;
-        proceed(event);
-      }
-    });
   }
   
   // Safari has a dummy event handler on page unload so that it won't
@@ -288,7 +254,7 @@ Object.extend(Event, (function() {
       if (element.addEventListener) {
         element.addEventListener(name, wrapper, false);
       } else {
-        addEventDispatcher(element, eventName);
+        element.attachEvent("on" + name, wrapper);
       }
       
       return element;
@@ -321,15 +287,10 @@ Object.extend(Event, (function() {
       var name = getDOMEventName(eventName);
       if (element.removeEventListener) {
         element.removeEventListener(name, wrapper, false);
-        destroyWrapper(id, eventName, handler); 
       } else {
-        destroyWrapper(id, eventName, handler);
-        var wrappers = getWrappersForEventName(id, eventName); 
-        if (!wrappers.length) { 
-          element.detachEvent("on" + name, wrappers.dispatcher); 
-          wrappers.dispatcher = null; 
-        } 
+        element.detachEvent("on" + name, wrapper); 
       }
+      destroyWrapper(id, eventName, handler); 
       
       return element;
     },
@@ -389,9 +350,36 @@ Object.extend(document, {
     document.loaded = true;
     document.fire("dom:loaded");
   }
-  
+
+  function isCssLoaded() {
+    return true;
+  }
+
   if (document.addEventListener) {
-    document.addEventListener("DOMContentLoaded", fireContentLoadedEvent, false);
+    if (Prototype.Browser.Opera) {
+      isCssLoaded = function() {
+         var sheets = document.styleSheets, length = sheets.length;
+         while (length--) if (sheets[length].disabled) return false;
+         return true;
+      };
+      // Force check to end when window loads
+      Event.observe(window, "load", function() { isCssLoaded = function() { return true } });
+    }
+    else if (Prototype.Browser.WebKit) {
+      isCssLoaded = function() {
+        var length = document.getElementsByTagName('style').length,
+        links = document.getElementsByTagName('link');
+        for (var i=0, link; link = links[i]; i++)
+          if(link.getAttribute('rel') == "stylesheet") length++;
+        return document.styleSheets.length >= length;
+      };
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+      // Ensure all stylesheets are loaded, solves Opera/Safari issue
+      if (!isCssLoaded()) return arguments.callee.defer();
+      fireContentLoadedEvent();
+    }, false);
+    
   } else {
     document.attachEvent("onreadystatechange", function() {
       if (document.readyState == "complete") {
@@ -410,15 +398,14 @@ Object.extend(document, {
     }
   }
   
-  
   // Safari <3.1 doesn't support DOMContentLoaded
   if (Prototype.Browser.WebKit && (navigator.userAgent.match(/AppleWebKit\/(\d+)/)[1] < 525)) {
     timer = setInterval(function() {
-      if (/loaded|complete/.test(document.readyState))
+      if (/loaded|complete/.test(document.readyState) && isCssLoaded())
         fireContentLoadedEvent();
     }, 10);
   }
   
   // Worst case fallback... 
-  Event.observe(window, "load", fireContentLoadedEvent); 
+  Event.observe(window, "load", fireContentLoadedEvent);
 })();
