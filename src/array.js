@@ -1,22 +1,3 @@
-function $A(iterable) {
-  if (!iterable) return [];
-  if (iterable.toArray) return iterable.toArray();
-  var length = iterable.length || 0, results = new Array(length);
-  while (length--) results[length] = iterable[length];
-  return results;
-}
-
-if (Prototype.Browser.WebKit) {
-  $A = function(iterable) {
-    if (!iterable) return [];
-    if (!(Object.isFunction(iterable) && iterable == '[object NodeList]') &&
-        iterable.toArray) return iterable.toArray();
-    var length = iterable.length || 0, results = new Array(length);
-    while (length--) results[length] = iterable[length];
-    return results;
-  };
-}
-
 Array.from = $A;
 
 Object.extend(Array.prototype, Enumerable);
