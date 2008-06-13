@@ -1,0 +1,6 @@
+{
+  "types": [
+      { "key": "INPUT:ACCESSKEY", "description": "accessibility key character",
+           "pattern": ".?", "optional": true }
+  ]
+}
