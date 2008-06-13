@@ -463,8 +463,15 @@ class PageBuilder
   end
   
   def destination
+    name_file(:ext => 'html')
+  end
+  
+  def name_file(options = {})
+    prefix = options[:prefix] ? "#{options[:prefix]}_" : ""
+    suffix = options[:suffix] ? "_#{options[:suffix]}" : ""
+    ext    = options[:ext] ? options[:ext] : "js"
     filename = File.basename(@filename, '.js')
-    File.join(TMP_DIR, "#{filename}.html")
+    File.join(TMP_DIR, "#{prefix}#{filename}#{suffix}.#{ext}")
   end
 end
 
