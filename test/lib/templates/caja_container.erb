@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Cajoled unit test file | <%= @title %></title>
+  <script src="assets/caja.js" type="text/javascript"></script>
+  <script src="assets/permissive.js" type="text/javascript"></script>
+</head>
+<body>
+
+
+  <script>
+    // ___.sharedImports is the stuff that's common to all modules.
+    // We make a copy so we can grant different capabilities to 
+    // different modules.
+    var imports = ___.copy(___.sharedImports);
+
+    // "Taming" a global object is disabling everything except 
+    // explicitly whitelisted reads, calls, sets, and deletes.
+
+    // DOM taming
+    // Give the module a fake document object.
+    imports.document = {};
+
+    // Put in a fake "document.write" method that sanitizes the html.
+    imports.document.write = function(html) {
+      document.getElementById('my_shared_module_div').innerHTML += html;
+    };
+
+    imports.document.getElementById = function(id) {
+      id = String(id);
+      var element = document.getElementById('my_prefix_'+id);
+      ___.allowCall(element, 'hasAttributes');
+      ___.allowRead(element, 'tagName');
+      ___.allowSet(element,'innerHTML');
+      return element;
+    };
+
+    // Whitelist the document methods.
+    ___.allowCall(imports.document, 'getElementById');
+    ___.allowCall(imports.document, 'write');
+
+    // The next two modules loaded after this will share the same
+    // virtual global scope
+    ___.getNewModuleHandler().setImports(imports);
+  </script>
+
+  <div id="my_shared_module_div">
+  </div>
+
+  <script src="<%= @cajoled_gadget %>" type="text/javascript"></script>
+</body>
+</html>
