@@ -82,7 +82,6 @@ module Caja
   def self.java(class_name, options = {})
     log  = options.delete(:log)
     cmd  = "java #{heap} -cp #{class_path} #{class_name}#{to_option_string(options)} > #{log} 2>&1"
-    puts cmd
     raise CompileError.new(log) unless system(cmd)
   end
   

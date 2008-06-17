@@ -111,10 +111,8 @@ namespace 'caja' do
   end
   
   desc 'Copies fixtures to test/unit/tmp/fixtures directory.'
-  task :copy_fixtures => [:dist] do
+  task :copy_fixtures do
     puts 'Copying fixtures to test/unit/tmp/fixtures directory.'
-    fixtures = File.join(PROTOTYPE_TMP_DIR, 'fixtures')
-    FileUtils.rm_rf(fixtures)
-    FileUtils.cp_r(File.join(PROTOTYPE_TEST_DIR, 'unit', 'fixtures'), fixtures)
+    FileUtils.cp_r(File.join(PROTOTYPE_TEST_DIR, 'unit', 'fixtures'), PROTOTYPE_TMP_DIR)
   end
 end
