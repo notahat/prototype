@@ -5,51 +5,49 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Cajoled unit test file | <%= @title %></title>
-  <script src="assets/caja.js" type="text/javascript"></script>
-  <script src="assets/permissive.js" type="text/javascript"></script>
+  <script type=text/javascript>
+  window.onerror = function (msg, url, line) {
+    url = String(url);
+    try {
+      console.log(
+          url.substring(url.lastIndexOf('/') + 1) + ':' + line + ' ' + msg);
+      console.trace();
+    } catch (ex) {
+      alert(url.substring(url.lastIndexOf('/') + 1) + ':' + line + ' ' + msg);
+    }
+  };
+  </script> 
+  <script type="text/javascript" src="assets/caja.js"></script>
+  <script type="text/javascript" src="assets/permissive.js"></script>
+  <script type="text/javascript" src="assets/caja-debugmode.js"></script>
+  <script type="text/javascript" src="assets/log-to-console.js"></script>
+  <script type="text/javascript" src="assets/unicode.js"></script>
+  <script type="text/javascript" src="assets/html4-defs.js"></script>
+  <script type="text/javascript" src="assets/html-sanitizer.js"></script>
+  <script type="text/javascript" src="assets/html-emitter.js"></script>
+  <script type="text/javascript" src="assets/domita.js"></script>
 </head>
 <body>
+  <script type="text/javascript">(function () {
+    ___.sharedImports.console = {};
+    for (var k in { log: 0, warn: 0, info: 0, error: 0, trace: 0,
+                    group: 0, groupEnd: 0, time: 0, timeEnd: 0, dir: 0,
+                    assert: 0, dirxml: 0, profile: 0, profileEnd: 0 }) {
+      ___.sharedImports.console[k] = (function (k, f) {
+        return ___.simpleFunc(function () { f.apply(console, arguments); });
+      })(k, console[k]);
+    }
+  })();</script>
+  
+  <div id="base-test" class="test"/></div>
 
-
-  <script>
-    // ___.sharedImports is the stuff that's common to all modules.
-    // We make a copy so we can grant different capabilities to 
-    // different modules.
-    var imports = ___.copy(___.sharedImports);
-
-    // "Taming" a global object is disabling everything except 
-    // explicitly whitelisted reads, calls, sets, and deletes.
-
-    // DOM taming
-    // Give the module a fake document object.
-    imports.document = {};
-
-    // Put in a fake "document.write" method that sanitizes the html.
-    imports.document.write = function(html) {
-      document.getElementById('my_shared_module_div').innerHTML += html;
-    };
-
-    imports.document.getElementById = function(id) {
-      id = String(id);
-      var element = document.getElementById('my_prefix_'+id);
-      ___.allowCall(element, 'hasAttributes');
-      ___.allowRead(element, 'tagName');
-      ___.allowSet(element,'innerHTML');
-      return element;
-    };
-
-    // Whitelist the document methods.
-    ___.allowCall(imports.document, 'getElementById');
-    ___.allowCall(imports.document, 'write');
-
-    // The next two modules loaded after this will share the same
-    // virtual global scope
-    ___.getNewModuleHandler().setImports(imports);
+  <script type="text/javascript">
+    var testImports = ___.copy(___.sharedImports);
+    attachDocumentStub('-test', { rewrite: function () { return null; } }, testImports);
+    testImports.htmlEmitter___ = new HtmlEmitter(document.getElementById('base-test'));
+    ___.getNewModuleHandler().setImports(testImports);
   </script>
-
-  <div id="my_shared_module_div">
-  </div>
-
   <script src="<%= @cajoled_gadget %>" type="text/javascript"></script>
+
 </body>
 </html>
