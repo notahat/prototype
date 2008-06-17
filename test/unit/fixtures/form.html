@@ -10,9 +10,12 @@
 <form id="bigform" method="get" action="fixtures/empty.js">
   <div id="inputs">
     <input type="text"   name="dummy"  id="dummy_disabled" disabled="disabled"/>
-    <input type="submit" name="commit" id="submit" />
+    <input type="submit" name="input_commit" id="input_submit" value="input submit me"/>
+    <input type="image"  name="image_commit" id="image_submit" value="image submit me"/>
+    <button type="submit" name="button_commit" id="button_submit">button submit me</button>
     <input type="button" name="clicky" value="click me" />
-    <input type="reset"  name="revert" />
+    <input type="reset"  name="input_revert" value="input reset me" />
+    <button type="reset" name="button_revert">button revert me</button>
     <input type="text"   name="greeting" id="focus_text" value="Hello" />
   </div>
 
@@ -77,6 +80,15 @@
     <input type="hidden" name="tf_hidden" />
     <input type="password" name="tf_password" />
   </div>
+</form>
+
+<form id="form_with_control_groups">
+  <input type="radio" name="group_radio" value="1r" />
+  <input type="radio" name="group_radio" value="2r" checked />
+  <input type="radio" name="group_radio" value="3r" />
+  <input type="checkbox" name="group_checkbox" value="1c" />
+  <input type="checkbox" name="group_checkbox" value="2c" checked />
+  <input type="checkbox" name="group_checkbox" value="3c" />
 </form>
 
 <form id="form_focus_hidden" style="display: none">

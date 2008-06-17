@@ -67,6 +67,24 @@ div.style-test { margin-left: 1px }
   width: 20em;
 }
 
+#clonePositionSource {
+  position: absolute;
+  top: 10px;
+  left: 560px;
+  height: 20px;
+  width: 30px;
+  background: red;
+  border: 3px solid yellow;
+  z-index: 1;
+}
+
+#clonePositionTarget {
+  position: absolute;
+  padding: 2px;
+  margin: 2px;
+  border: 5px solid black;
+  background: #21bacc;
+}
 
 #notInlineAbsoluted { position: absolute; }
 

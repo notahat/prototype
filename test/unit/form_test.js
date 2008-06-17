@@ -178,7 +178,7 @@ new Test.Unit.Runner({
     
     // Form.focusFirstElement shouldn't focus disabled elements
     var element = Form.findFirstElement('bigform');
-    this.assertEqual('submit', element.id);
+    this.assertEqual('input_submit', element.id);
     
     // Test IE doesn't select text on buttons
     Form.focusFirstElement('bigform');
@@ -273,7 +273,19 @@ new Test.Unit.Runner({
                     $('form').serialize({ submit: 'inexistent' }));
 
     // file input should not be serialized  
-    this.assertEqual('', $('form_with_file_input').serialize());   
+    this.assertEqual('', $('form_with_file_input').serialize()); 
+    
+    // test with image input button
+    var expected = {clicky:'click me', greeting:'Hello', 'image_commit.x':2, 'image_commit.y':4};
+    this.assertHashEqual(expected, Form.serialize('inputs', {submit: $('image_submit'), x:2, y:4}));
+    
+    // test with button element
+    var expected = {clicky:'click me', greeting:'Hello', 'button_commit':'button submit me'};
+    this.assertHashEqual(expected, Form.serialize('inputs', {submit:'button_commit'}));
+    
+    // test control groups
+    var expected = {group_radio:'2r', group_checkbox:'2c'};
+    this.assertHashEqual(expected, Form.serialize('form_with_control_groups', {submit:'button_commit'}));
   },
   
   testFormMethodsOnExtendedElements: function() {
@@ -305,10 +317,7 @@ new Test.Unit.Runner({
     this.assertEqual("get", request.method);
     
     request = $("form").request({ method: "put", parameters: {val2: "hello"} });
-    var url = request.url;
-    
-    this.assert(url.startsWith("fixtures/empty.js"));
-    this.assert(url.endsWith("_method=put") || url.endsWith("_method=put&_="));
+    this.assert(request.url.endsWith("fixtures/empty.js"));
     this.assertEqual(4, request.options.parameters['val1']);
     this.assertEqual('hello', request.options.parameters['val2']);
     this.assertEqual("post", request.method);
@@ -318,6 +327,10 @@ new Test.Unit.Runner({
     request = $("ffe").request({ method: 'post' });
     this.assert(request.url.include("unit/tmp/form_test.html"),
       'wrong default action for form element with empty action attribute');
+      
+    // with explicit options.submit
+    request = $("form").request({ submit: 'second_submit' });
+    this.assert(request.url.include("second_submit=Delete%20it!"));
   },
   
   testFormElementMethodsChaining: function(){
@@ -334,8 +347,7 @@ new Test.Unit.Runner({
   testGetValue: function() {
     this.assertEqual('Click Me', Form.Element.getValue('button_type_button')); // Button element
     this.assertEqual(null, Form.Element.getValue('someBorkedId')); // Unknown
- 	  this.assertEqual(null, Form.Element.getValue('form')); // Unsupported
- 	  this.assertEqual(null, Form.Element.getValue('form')); // Unsupported
+ 	this.assertEqual(null, Form.Element.getValue('form')); // Unsupported
   },
   
   testSetValue: function(){

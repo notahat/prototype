@@ -17,8 +17,8 @@ var Form = {
       value   = element.getValue();
       type    = element.type;
       
-      isImageType    = type === 'image';
-      isSubmitButton = (type === 'submit' || isImageType);
+      isImageType = type === 'image';
+      isSubmitButton = type === 'submit' || isImageType;
       
       // Null values don't get serialized
       if (value === null) return result;
@@ -31,7 +31,7 @@ var Form = {
        (submit === false || submitSerialized ||
        (submit && !(key === submit || element === submit))))
         return result;
-        
+      
       if (isSubmitButton) {
         submitSerialized = true;
         if (isImageType) {
@@ -42,9 +42,7 @@ var Form = {
           result[prefix + 'y'] = y;
           return result;
         }
-      } 
-      
-      else if (!key) return result;
+      } else if (!key) return result;
       
       if (key in result) {
         // a key is already present; construct an array of values
@@ -126,7 +124,10 @@ Form.Methods = {
 
     var params = options.parameters, action = form.readAttribute('action') || '';
     if (action.blank()) action = window.location.href;
-    options.parameters = form.serialize(true);
+
+    var submit = options.submit;
+    delete options.submit;
+    options.parameters = form.serialize({ submit:submit, hash:true });
     
     if (params) {
       if (Object.isString(params)) params = params.toQueryParams();
