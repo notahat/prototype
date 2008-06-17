@@ -31,9 +31,13 @@ module Caja
       end
   end
   
-  class GadgetBuilder < PageBuilder
+  class Builder < PageBuilder
+    TEMPLATES_DIR = File.join(UNITTEST_DIR, 'lib', 'caja', 'templates')
+  end
+  
+  class GadgetBuilder < Builder
     def initialize(filename)
-      super(filename, 'caja_gadget.erb')
+      super(filename, 'gadget.erb')
     end
     
     def destination
@@ -45,14 +49,14 @@ module Caja
       Caja.cajole({
         :i                  => destination,
         :log                => name_file(:ext => 'txt', :suffix => 'caja_log'),
-        :html_attrib_schema => "resource:///html_attrib_whitelist.json"
+        :html_attrib_schema => "resource:///html_attrib.json"
       })
     end
   end
   
-  class ContainerBuilder < PageBuilder
+  class ContainerBuilder < Builder
     def initialize(filename)
-      super(filename, 'caja_container.erb')
+      super(filename, 'container.erb')
     end
     
     def destination
@@ -78,6 +82,7 @@ module Caja
   def self.java(class_name, options = {})
     log  = options.delete(:log)
     cmd  = "java #{heap} -cp #{class_path} #{class_name}#{to_option_string(options)} > #{log} 2>&1"
+    puts cmd
     raise CompileError.new(log) unless system(cmd)
   end
   
@@ -86,8 +91,9 @@ module Caja
       caja_src_path = ENV['CAJA_SRC_PATH']
       raise "You must define CAJA_SRC_PATH to run cajoled tests." unless caja_src_path
       caja_src_path = File.expand_path(caja_src_path)
-      assets_path = File.expand_path(File.join(PROTOTYPE_TEST_DIR, 'lib'))
-      Dir["#{caja_src_path}/ant-jars/*.jar"].join(':') << ":#{assets_path}"
+      files = Dir["#{caja_src_path}/ant-jars/*.jar"]
+      files << File.expand_path(File.join(PROTOTYPE_TEST_DIR, 'lib', 'caja', 'whitelist'))
+      files.join(':')
     end
     
     def self.to_option_string(options)

@@ -84,7 +84,7 @@ task :rm_tmp do
 end
 
 namespace 'caja' do
-  require 'test/lib/caja'
+  require 'test/lib/caja/caja.rb'
   
   desc 'Builds and cajoles gadgets.'
   task :cajole_gadgets => [:rm_tmp, :copy_assets, :copy_fixtures] do
@@ -105,9 +105,9 @@ namespace 'caja' do
   desc 'Copies assets to test/unit/tmp/assets directory.'
   task :copy_assets => [:dist] do
     puts 'Copying assets to test/unit/tmp/assets directory.'
-    assets = File.join(PROTOTYPE_TMP_DIR, 'assets')
-    FileUtils.cp_r(File.join(PROTOTYPE_TEST_DIR, 'lib', 'assets'), assets)
-    FileUtils.cp(File.join(PROTOTYPE_DIST_DIR, 'prototype.js'), assets)
+    FileUtils.cp_r(File.join(PROTOTYPE_TEST_DIR, 'lib', 'assets'), PROTOTYPE_TMP_DIR)
+    FileUtils.cp_r(File.join(PROTOTYPE_TEST_DIR, 'lib', 'caja', 'assets'), PROTOTYPE_TMP_DIR)
+    FileUtils.cp(File.join(PROTOTYPE_DIST_DIR, 'prototype.js'), File.join(PROTOTYPE_TMP_DIR, 'assets'))
   end
   
   desc 'Copies fixtures to test/unit/tmp/fixtures directory.'

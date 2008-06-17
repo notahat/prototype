@@ -434,7 +434,7 @@ class PageBuilder
   
   def initialize(filename, template = 'default.erb')
     @filename          = filename
-    @template          = File.join(TEMPLATES_DIR, template)
+    @template          = File.join(self.class::TEMPLATES_DIR, template)
     @js_filename       = File.basename(@filename)
     @basename          = @js_filename.sub('_test.js', '')
   end
