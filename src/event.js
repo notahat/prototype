@@ -342,17 +342,13 @@ Object.extend(document, {
   /* Support for the DOMContentLoaded event is based on work by Dan Webb, 
      Matthias Miller, Dean Edwards, John Resig and Diego Perini. */
 
-  var timer;
+  var timer, isCssLoaded = function() { return true };
   
   function fireContentLoadedEvent() {
     if (document.loaded) return;
     if (timer) window.clearInterval(timer);
     document.loaded = true;
     document.fire("dom:loaded");
-  }
-
-  function isCssLoaded() {
-    return true;
   }
 
   if (document.addEventListener) {
