@@ -259,13 +259,13 @@ new Test.Unit.Runner({
   testDoesntExtendObjectPrototype: function() {
     // for-in is supported with objects
     var iterations = 0, obj = { a: 1, b: 2, c: 3 };
-    for (property in obj) iterations++;
+    for (var property in obj) iterations++;
     this.assertEqual(3, iterations);
     
     // for-in is not supported with arrays
     iterations = 0;
     var arr = [1,2,3];
-    for (property in arr) iterations++;
+    for (var property in arr) iterations++;
     this.assert(iterations > 3);
   },
   
