@@ -379,8 +379,8 @@ new Test.Unit.Runner({
     var wrapper = new Element("div");
     wrapper.update("<table><tr><td id='myTD'></td></tr></table>");
     new Selector('[id=myTD]').findElements(wrapper);
-    this.assertNotNullOrUndefined(wrapper.select('[id=myTD]')[0]);
-    this.assertNotNullOrUndefined(wrapper.select('td')[0]);
-    this.assertNotNullOrUndefined(wrapper.select('#myTD')[0]);
+    this.assertNotNullOrUndefined(wrapper.select('[id=myTD]')[0], "[id=myTD]");
+    this.assertNotNullOrUndefined(wrapper.select('td')[0], "td");
+    this.assertNotNullOrUndefined(wrapper.select('#myTD')[0], "#myTD");
   }
 });

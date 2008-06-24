@@ -22,6 +22,10 @@ var Selector = Class.create({
     if (!Prototype.BrowserFeatures.XPath) return false;
     
     var e = this.expression;
+    
+    // Opera's XPath engine breaks down when selectors are too complex
+    if (Prototype.Browser.Opera)
+      return false;    
 
     // Safari 3 chokes on :*-of-type and :empty
     if (Prototype.Browser.WebKit && 
@@ -32,7 +36,7 @@ var Selector = Class.create({
     // the "checked" property from DOM nodes
     if ((/(\[[\w-]*?:|:checked)/).test(e))
       return false;
-
+      
     return true;
   },
   
@@ -461,9 +465,18 @@ Object.extend(Selector, {
     id: function(nodes, root, id, combinator) {
       var targetNode = $(id), h = Selector.handlers;
       if (!targetNode) {
-        // IE doesn't find elements by ID if they're not attached to the
-        // document.
-        if (Prototype.Browser.IE && (root.sourceIndex < 1 || root === document)) {
+        var needsToSearch = false;
+        // IE and Opera don't find elements by ID if they're not attached
+        // to the document.
+        if (Prototype.Browser.IE && (root.sourceIndex < 1 ||
+         root === document)) {
+          needsToSearch = true;        
+        } else if (Prototype.Browser.Opera &&
+         (root.compareDocumentPosition(document) & 1) === 1) {
+          needsToSearch = true;   
+        }
+        
+        if (needsToSearch) {
           var nodes = root.getElementsByTagName('*');
           for (var i = 0, node; node = nodes[i]; i++) {
             if (node.id === id) {

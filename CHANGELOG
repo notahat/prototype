@@ -1,3 +1,5 @@
+* Fix issue where Opera gets confused by complex selectors in $$. [Paulo Pereira, Andrea Baron, jddalton] 
+
 * Fix for IE7 to access local files via Ajax.Request. Closes #8259. [hagen.seifert, jddalton]
 
 * Ensure CSS files have loaded before firing the dom:loaded event. [Diego Perini, jddalton]
