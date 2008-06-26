@@ -1,3 +1,5 @@
+* Make Function#argumentNames use Function.prototype.toString. [Garrett Smith, jddalton, kangax]
+
 * Rename variable in Form.Element.Serializers.select. [jddalton]
 
 * Replace browser sniffing with capability detection in IE fork of String#unescapeHTML. [kangax]
