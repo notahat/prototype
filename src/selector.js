@@ -24,8 +24,10 @@ var Selector = Class.create({
     var e = this.expression;
     
     // Opera's XPath engine breaks down when selectors are too complex
-    if (Prototype.Browser.Opera)
-      return false;    
+    // (a regression in version 9.5)
+    if (Prototype.Browser.Opera &&
+     parseFloat(window.opera.version()) === 9.5)
+      return false;
 
     // Safari 3 chokes on :*-of-type and :empty
     if (Prototype.Browser.WebKit && 
