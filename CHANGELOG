@@ -1,3 +1,5 @@
+* Rename variable in Form.Element.Serializers.select. [jddalton]
+
 * Replace browser sniffing with capability detection in IE fork of String#unescapeHTML. [kangax]
 
 * Coerce Opera's version string into a number whenever we need to sniff. [Sam Holman, jddalton]
