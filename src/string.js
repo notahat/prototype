@@ -87,7 +87,7 @@ Object.extend(String.prototype, {
   },
 
   unescapeHTML: function() {
-    var div = new Element('div');
+    var div = document.createElement('div');
     // Safari requires the text nested inside another element to render correctly
     div.innerHTML = '<pre>' + this.stripTags() + '</pre>';
     div = div.firstChild;
@@ -226,9 +226,10 @@ Object.extend(String.prototype.escapeHTML, {
   text: document.createTextNode('')
 });
 
-String.prototype.escapeHTML.container.appendChild(String.prototype.escapeHTML.text);
+String.prototype.escapeHTML.container.appendChild(
+  String.prototype.escapeHTML.text);
 
-if (Prototype.Browser.IE) {
+if ('1\n2'.unescapeHTML() === '1\r2') {
   // IE converts all newlines to carriage returns so we swap them back
   String.prototype.unescapeHTML = String.prototype.unescapeHTML.wrap(function(proceed) {
     return proceed().replace(/\r/g, '\n')
