@@ -1162,25 +1162,20 @@ new Test.Unit.Runner({
   },
   
   testElementClonePosition: function() {
-  
-    var position, target, left = 558, top = 8;
-    target = $('clonePositionTarget').clonePosition('clonePositionSource', {
+    var target = $('clonePositionTarget'),
+     source = $('clonePositionSource');
+    
+    target.clonePosition(source, {  
       offsetTop: 20,
       offsetLeft: 30
     });
     
-    position = target.cumulativeOffset();
-    this.assertIdentical(top  + 20, position.top);
-    this.assertIdentical(left + 30, position.left);
-    
-    target = $('clonePositionTarget').clonePosition('clonePositionSource');
-    position = target.cumulativeOffset();
-    dimensions = target.getDimensions();
-    
-    this.assertIdentical(top, position.top);
-    this.assertIdentical(left, position.left);
-    this.assertIdentical(20, dimensions.height);
-    this.assertIdentical(30, dimensions.width);
+    this.assertIdentical(source.cumulativeOffset().top  + 20, target.cumulativeOffset().top);
+    this.assertIdentical(source.cumulativeOffset().left + 30, target.cumulativeOffset().left);
+        
+    target.clonePosition(source);
+    this.assertIdentical(source.getHeight(), target.getHeight());
+    this.assertIdentical(source.getWidth(), target.getWidth());    
   },
   
   testDOMAttributesHavePrecedenceOverExtendedElementMethods: function() {
@@ -1241,13 +1236,8 @@ new Test.Unit.Runner({
   
   testElementScrollTo: function() {
     var elem = $('scroll_test_2');
-    Element.scrollTo('scroll_test_2');
-    // IE has issues with document.body.scrollTop
-    this.assertEqual(Position.page(elem)[1], document.body.scrollTop || document.documentElement.scrollTop);
-    window.scrollTo(0, 0);
-    
     elem.scrollTo();
-    this.assertEqual(Position.page(elem)[1], document.body.scrollTop || document.documentElement.scrollTop);      
+    this.assertEqual(elem.viewportOffset()[1], 0);
     window.scrollTo(0, 0);
   },
   
@@ -1328,6 +1318,7 @@ new Test.Unit.Runner({
   },
   
   testViewportOffset: function() {
+    window.scrollTo(0, 0);
     this.assertEnumEqual([10,10],
       $('body_absolute').viewportOffset());
     this.assertEnumEqual([20,20],

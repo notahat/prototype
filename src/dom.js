@@ -656,14 +656,22 @@ Object.extend(Element.Methods, (function() {
   return {
     cumulativeScrollOffset: function(element) {
       element = $(element);
-      var valueT = 0, valueL = 0, endElement = document.body;
+      var valueT = 0, valueL = 0, end = document;
+      
+      if (Prototype.Browser.Opera && 
+       parseFloat(window.opera.version()) < 9.5 &&
+       element !== document.body) {         
+        end = document.documentElement;
+      }
+      
 
       if (element === document.documentElement ||
           element === endElement || element === document)
         return Element._returnOffset(0, 0);
 
       if (Element.getStyle(element, 'position') !== 'fixed') {
-        while ((element = element.parentNode) && element !== endElement) {
+        while ((element = element.parentNode) &&
+         element.nodeType === 1 && element !== end) {
           if (Element.getStyle(element, 'position') === 'fixed') break;
           valueT += element.scrollTop  || 0;
           valueL += element.scrollLeft || 0;

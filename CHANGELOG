@@ -1,3 +1,5 @@
+* Fix issues with Element#cumulativeScrollOffset and Opera <9.5. [staaky, jddalton]
+
 * Fix issues with Element#clonePosition and element border/padding. [staaky, jddalton]
 
 * Remove the redefinition of Element#getOffsetParent in IE. [staaky, jddalton]
@@ -14,7 +16,7 @@
 
 * Amend previous checkin to restrict fix to Opera 9.5. [Andrew Dupont]
 
-* Fix issue where Opera gets confused by complex selectors in $$. [Paulo Pereira, Andrea Baron, jddalton] 
+* Fix issue where Opera gets confused by complex selectors in $$. [Paulo Pereira, Andrea Baron, jddalton]  
 
 * Fix for IE7 to access local files via Ajax.Request. Closes #8259. [hagen.seifert, jddalton]
 
