@@ -1,3 +1,5 @@
+* Consolidate document.body getOffsetParent checks into a private utility method. [staaky, jddalton]
+
 * Fix issues with Element#cumulativeScrollOffset and Opera <9.5. [staaky, jddalton]
 
 * Fix issues with Element#clonePosition and element border/padding. [staaky, jddalton]

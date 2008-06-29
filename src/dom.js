@@ -442,7 +442,7 @@ Element.Methods = {
   getDimensions: function(element) {
     element = $(element);
     var display = element.getStyle('display'),
-     dimensions = { width: element.clientWidth, height: element.clientHeight };
+     dimensions = { width: element.offsetWidth, height: element.offsetHeight };
     
     // All width and height properties return 0 on elements with display:none,
     // so show the element temporarily
@@ -622,6 +622,15 @@ Object.extend(Element.Methods, (function() {
   function getStyleDiff(element, source, style) {
     return getNumericStyle(source, style) - getNumericStyle(element, style);
   }
+  
+  function getOffsetParent(element) {
+    var op = Element.getOffsetParent(element);
+    if (op === document.body &&
+     (element.sourceIndex < 1 || !element.offsetParent)) {
+      return false;
+    }
+    return op;
+  }
 
   function cloneDimension(element, source, dimension) {
     var style = { }, properties;
@@ -664,11 +673,6 @@ Object.extend(Element.Methods, (function() {
         end = document.documentElement;
       }
       
-
-      if (element === document.documentElement ||
-          element === endElement || element === document)
-        return Element._returnOffset(0, 0);
-
       if (Element.getStyle(element, 'position') !== 'fixed') {
         while ((element = element.parentNode) &&
          element.nodeType === 1 && element !== end) {
@@ -686,7 +690,7 @@ Object.extend(Element.Methods, (function() {
       do {
         valueT += element.offsetTop  || 0;
         valueL += element.offsetLeft || 0;
-      } while ((element = Element.getOffsetParent(element)) !== document.body);
+      } while (element = getOffsetParent(element));
 
       return Element._returnOffset(valueL, valueT);
     },
@@ -697,7 +701,7 @@ Object.extend(Element.Methods, (function() {
       do {
         valueT += element.offsetTop  || 0;
         valueL += element.offsetLeft || 0;
-        element = Element.getOffsetParent(element);
+        element = getOffsetParent(element);
       } while (element !== document.body && 
        Element.getStyle(element, 'position') === 'static');
 
@@ -713,10 +717,10 @@ Object.extend(Element.Methods, (function() {
         valueL += element.offsetLeft || 0;
 
         // Safari fix
-        op = Element.getOffsetParent(element);
+        op = getOffsetParent(element);
         if (op === document.body && Element.getStyle(element,
          'position') === 'absolute') break;
-      } while ((element = op) !== document.body);
+      } while (element = op);
 
       var scrollOffset = Element.cumulativeScrollOffset(forElement);
       valueT -= scrollOffset.top;
