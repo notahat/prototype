@@ -457,7 +457,7 @@ Element.Methods = {
       els.position = 'absolute';
       els.display = 'block';
       
-      dimensions = { width: element.clientWidth, height: element.clientHeight };
+      dimensions = { width: element.offsetWidth, height: element.offsetHeight };
 
       els.display = originalDisplay;
       els.position = originalPosition;
