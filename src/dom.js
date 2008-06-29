@@ -624,21 +624,32 @@ Object.extend(Element.Methods, (function() {
   }
 
   function cloneDimension(element, source, dimension) {
-    var d = Element.getDimensions(source), style = { };
-    style[dimension] = d[dimension] + 'px';
+    var style = { }, properties;
     
-    var styles = $w('margin padding'),
-     sides = (dimension === 'height') ? $w('top bottom') : $w('left right');
-
-    // Avoiding helpers like $w for speed
-    var property;
-    for (var i = 0; i < 2; i++) {
-      for (var j = 0; j < 2; j++) {
-        property = styles[i] + sides[j].capitalize();
-        style[property] = (getNumericStyle(element, property) + 
-         getStyleDiff(element, source, property)) + 'px';
-      }
+    if (dimension === 'height') {
+      properties = $w('borderTopWidth marginTop paddingTop ' +
+       'borderBottomWidth marginBottom paddingBottom');
+    } else {
+      properties = $w('borderLeftWidth marginLeft paddingLeft ' +
+       'borderRightWidth marginRight paddingRight');
     }
+    
+    style[dimension] = Element.getDimensions(source)[dimension];
+    
+    // Adjust element border and padding for accurate dimensions and
+    // margins for accurate position.    
+    for (var i = 0, property, value; property = properties[i]; i++) {
+      if (property.include('margin')) {
+        value = getNumericStyle(element, property);
+        style[property] = value + (getNumericStyle(source, property) -
+         value) + 'px';
+      } else {
+        value = getNumericStyle(source, property);
+        style[property] = value + 'px';
+        style[dimension] -= value;
+      }
+    }    
+    style[dimension] += 'px';    
     Element.setStyle(element, style);
   }
   
@@ -732,30 +743,18 @@ Object.extend(Element.Methods, (function() {
         delta[0] -= document.body.offsetLeft;
         delta[1] -= document.body.offsetTop;
       }
+      
+      // find page position of source
+      var p = Element.viewportOffset(source);
 
-      // set dimensions
+      // set dimensions and position
       if (options.setWidth)  cloneDimension(element, source, 'width');
       if (options.setHeight) cloneDimension(element, source, 'height');
+      if (options.setLeft)
+        element.style.left = (p[0] - delta[0] + options.offsetLeft + 'px');
+      if (options.setTop)
+        element.style.top  = (p[1] - delta[1] + options.offsetTop  + 'px');
 
-      // find page position of source
-      var p = Element.viewportOffset(source),
-      borderOffset = ['borderLeftWidth', 'borderTopWidth'].map(
-       function(style) { return getStyleDiff(element, source, style) });
-
-      if (options.setLeft) {
-        var left = p[0] - delta[0] + borderOffset[0];
-        if (options.offsetLeft) 
-          left += options.offsetLeft + getNumericStyle(element, 'paddingLeft');
-          
-        element.style.left = left + 'px';
-      }
-      if (options.setTop) {
-        var top = p[1] - delta[1] + borderOffset[1];
-        if (options.offsetTop)
-          top += options.offsetTop + getNumericStyle(element, 'paddingTop');
-          
-        element.style.top = top + 'px';
-      }
       return element;
     }
   };
