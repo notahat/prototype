@@ -1,3 +1,5 @@
+* Remove the redefinition of Element#getOffsetParent in IE. [staaky, jddalton]
+
 * Make Element#getDimensions always use offset(Height|Width) rather than client(Height|Width). [staaky, jddalton]
 
 * Make Function#argumentNames use Function.prototype.toString. [Garrett Smith, jddalton, kangax]
