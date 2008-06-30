@@ -698,8 +698,8 @@ Object.extend(Element.Methods, (function() {
         valueT += element.offsetTop  || 0;
         valueL += element.offsetLeft || 0;
         element = getOffsetParent(element);
-      } while (element !== document.body && 
-       Element.getStyle(element, 'position') === 'static');
+      } while (element && element !== document.body &&
+        Element.getStyle(element, 'position') === 'static');
 
       return Element._returnOffset(valueL, valueT);
     },
