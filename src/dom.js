@@ -619,10 +619,6 @@ Object.extend(Element.Methods, (function() {
     return parseFloat(Element.getStyle(element, style)) || 0;
   }
 
-  function getStyleDiff(element, source, style) {
-    return getNumericStyle(source, style) - getNumericStyle(element, style);
-  }
-  
   function getOffsetParent(element) {
     var op = Element.getOffsetParent(element);
     if (op === document.body &&
