@@ -174,6 +174,7 @@ var ___;
    * the message of the Error that's thrown.
    */
   function fail(var_args) {
+    // TODO(metaweta): Ask mike samuel about this vs. log-to-console.js
     (typeof console !== 'undefined') && console.trace();
     var message = Array.prototype.slice.call(arguments, 0).join('');
     myLogFunc_(message, true);
@@ -992,6 +993,50 @@ var ___;
     return asSimpleFunc(fun);
   }
 
+  /** 
+   * Returns true if the object is known to be the prototype of some other object.
+   * May give false negatives, but won't give false positives.
+   */
+  function isPrototypical(o) {
+    if (typeof o !== 'object') {
+      return false;
+    }
+    var c = o.constructor;
+    if (typeof c !== 'function') {
+      return false;
+    }
+    return c.prototype === o; 
+  }
+
+  /**
+   * Throws an exception if the value is an unmarked function or a prototypical object.
+   */
+  function asFirstClass(value) {
+    switch(typeof value) {
+      case 'function':
+        if (((isMethod(value) || 
+            isXo4aFunc(value) || 
+            isCtor(value)) && 
+            isFrozen(value)) ||
+            (value instanceof RegExp)) {
+          return value;
+        } else {
+          // TODO(metaweta): make this a caja-uncatchable exception
+          fail("Internal: toxic function encountered: ", value);
+        }
+        break;
+      case 'object':
+        if (isPrototypical(value)) {
+          // TODO(metaweta): make this a caja-uncatchable exception
+          fail("Internal: prototypical object encountered: ", value);
+        }
+        return value;
+        break;
+      default:
+        return value;
+    }
+  }
+
   /**
    * Sets constr.prototype[name] = member.
    * <p>
@@ -1001,7 +1046,7 @@ var ___;
    */
   function setMember(constr, name, member) {
     name = String(name);
-    if (endsWith(name, '__')) {
+    if (endsWith(name, '__') || name === 'valueOf') {
       fail('Reserved name: ', name);
     }
     var proto = asCtorOnly(constr).prototype;
@@ -1020,7 +1065,7 @@ var ___;
       fastpathRead(proto, name);
       fastpathEnum(proto, name);
     }
-    proto[name] = member;
+    proto[name] = asFirstClass(member);
   }
 
   ////////////////////////////////////////////////////////////////////////
@@ -1280,6 +1325,7 @@ var ___;
   function canSetProp(that, name) {
     name = String(name);
     if (endsWith(name, '__')) { return false; }
+    if (name === 'valueOf') { return false; }
     if (canSet(that, name)) { return true; }
     return !isFrozen(that);
   }
@@ -1290,11 +1336,11 @@ var ___;
   function setProp(that, name, val) {
     name = String(name);
     if (canSetProp(that, name)) {
-      fastpathSet(that, name);
+      if (name !== 'toString') { fastpathSet(that, name); }
       if (!hasOwnProp(that, name)) {
         fastpathDelete(that, name);
       }
-      return that[name] = val;
+      return that[name] = asFirstClass(val);
     } else {
       return that.handleSet___(name, val);
     }
@@ -1318,6 +1364,7 @@ var ___;
   function canSetPub(obj, name) {
     name = String(name);
     if (endsWith(name, '_')) { return false; }
+    if (name === 'valueOf') { return false; }
     if (canSet(obj, name)) { return true; }
     return !isFrozen(obj) && isJSONContainer(obj);
   }
@@ -1326,9 +1373,8 @@ var ___;
   function setPub(obj, name, val) {
     name = String(name);
     if (canSetPub(obj, name)) {
-      fastpathSet(obj, name);
-      obj[name] = val;
-      return val;
+      if (name !== 'toString') { fastpathSet(obj, name); }
+      return obj[name] = asFirstClass(val);
     } else {
       return obj.handleSet___(name, val);
     }
@@ -1349,11 +1395,13 @@ var ___;
       log('Cannot set static member of frozen function', ctor);
       return false;
     }
-    if (staticMemberName in ctor) {  // disallows prototype, call, apply, bind
+    // disallows prototype, call, apply, bind
+    if (staticMemberName in ctor) {
       log('Cannot override static member ', staticMemberName);
       return false;
     }
-    if (endsWith(staticMemberName, '_')) {  // statics are public
+    // statics are public
+    if (endsWith(staticMemberName, '_') || staticMemberName === 'valueOf') {
       log('Illegal static member name ', staticMemberName);
       return false;
     }
@@ -1384,6 +1432,7 @@ var ___;
     name = String(name);
     if (isFrozen(obj)) { return false; }
     if (endsWith(name, '__')) { return false; }
+    if (name === 'valueOf') { return false; }
     if (isJSONContainer(obj)) { return true; }
     return !!obj[name + '_canDelete___'];
   }
@@ -1409,6 +1458,7 @@ var ___;
     name = String(name);
     if (isFrozen(obj)) { return false; }
     if (endsWith(name, '__')) { return false; }
+    if (name === 'valueOf') { return false; }
     if (isJSONContainer(obj)) { return true; }
     return false;
   }
@@ -1556,35 +1606,54 @@ var ___;
    * <p>
    * TODO(erights): return a builder object that allows further
    * initialization.
-   */
-  function def(sub, opt_Sup, opt_members, opt_statics) {
-    var sup = opt_Sup || Object;
-    var members = opt_members || {};
-    var statics = opt_statics || {};
+   */ 
+  function commonDef(init) {
+    return function(sub, opt_Sup, opt_members, opt_statics) {
+      var sup = opt_Sup || Object;
+      // TODO(metaweta): Fix caja.def here or in the rewrite rule to avoid creating an object
+      // literal with a bad toString member that gets executed by Firebug when printing stack info
+      // during an error.
+      var members = opt_members || {};
+      var statics = opt_statics || {};
 
-    if (isSimpleFunc(sub)) {
-      derive(sub, sup);
-    } else {
-      ctor(sub, sup);
+      if (isSimpleFunc(sub)) {
+        derive(sub, sup);
+      } else {
+        ctor(sub, sup);
+      }
+      function PseudoSuper() {}
+      PseudoSuper.prototype = sup.prototype;
+      sub.prototype = new PseudoSuper();
+      if (sub.make___) {
+        // We must preserve this identity, so anywhere that either
+        // <tt>.prototype</tt> property might be assigned to, we must
+        // assign to the other as well.
+        sub.make___.prototype = sub.prototype;
+      }
+      sub.prototype.constructor = sub;
+      init(sub, members);
+      each(statics, simpleFunc(function(sname, staticMember) {
+        setStatic(sub, sname, staticMember);
+      }));
+      // translator freezes sub and sub.prototype later.
     }
-    function PseudoSuper() {}
-    PseudoSuper.prototype = sup.prototype;
-    sub.prototype = new PseudoSuper();
-    if (sub.make___) {
-      // We must preserve this identity, so anywhere that either
-      // <tt>.prototype</tt> property might be assigned to, we must
-      // assign to the other as well.
-      sub.make___.prototype = sub.prototype;
-    }
-    sub.prototype.constructor = sub;
-
-    setMemberMap(sub, members);
-    each(statics, simpleFunc(function(sname, staticMember) {
-      setStatic(sub, sname, staticMember);
-    }));
-
-    // translator freezes sub and sub.prototype later.
   }
+
+  var def = commonDef(
+      function(sub, members) {
+        setMemberMap(sub, members);
+      });
+
+  /**
+   * 
+   * Unsafe version of <tt>caja.def</tt> for use by uncajoled code.
+   */
+  var unsafeDef = commonDef(
+      function (sub, members) {
+        each(members, simpleFunc(function(key, val){
+          sub.prototype[key] = val;
+        }));
+      });
 
   ////////////////////////////////////////////////////////////////////////
   // Taming mechanism
@@ -1780,10 +1849,10 @@ var ___;
     return primFreeze(this);
   }));
 
-  useGetAndCallHandlers(Object.prototype, 'apply', xo4a(function(that, realArgs) {
+  useGetAndCallHandlers(Function.prototype, 'apply', xo4a(function(that, realArgs) {
     return asXo4aFunc(this).apply(that, realArgs);
   }));
-  useGetAndCallHandlers(Object.prototype, 'call', xo4a(function(that, realArgs) {
+  useGetAndCallHandlers(Function.prototype, 'call', xo4a(function(that, realArgs) {
     return asXo4aFunc(this).apply(that, Array.prototype.slice.call(arguments, 1));
   }));
 
@@ -1946,7 +2015,6 @@ var ___;
       getImports: simpleFunc(function() { return imports; }),
       setImports: simpleFunc(function(newImports) { imports = newImports; }),
       handle: simpleFunc(function(newModule) {
-        imports.caja = caja;
         newModule(___, imports);
       })
     });
@@ -2068,21 +2136,34 @@ var ___;
   /**
    * This function adds the given trademark to the given object's list of
    * trademarks.
-   * If the map doesn't exist yet, this function creates it.
-   * If the object is still being constructed, it delays the trademarking.
+   * If the trademark list doesn't exist yet, this function creates it.
+   * JSON containers and functions may be stamped at any time; constructed
+   * objects may only be stamped during construction unless the third
+   * parameter is truthy.
    */
-  function audit(trademark, obj) {
+  function stamp(trademark, obj, opt_allow_constructed) {
     enforce (typeof trademark === 'object',
         'The supplied trademark is not an object.');
+    enforce (!isFrozen(obj), 'The supplied object ' + obj + ' is frozen.');
+    if (!isJSONContainer(obj) && 
+        (typeof obj !== 'function') &&
+        !obj.underConstruction___ &&
+        !opt_allow_constructed) {
+      fail('The supplied object '
+          + obj + ' has already been constructed and may not be stamped.');
+    }
     var list = obj.underConstruction___ ?
         "delayedTrademarks___" : "trademarks___";
     if (!obj[list]) { obj[list] = []; }
     obj[list].push(trademark);
+    return obj;
   }
 
-  function initializeMap(mapObj) {
+  function initializeMap(list) {
     var result = {};
-    each(mapObj, simpleFunc(function(k, v) { setPub(result, k, v); }));
+    for (var i = 0; i < list.length; i+=2) {
+      setPub(result, list[i], list[i+1]);
+    }
     return result;
   }
 
@@ -2124,12 +2205,10 @@ var ___;
     return freeze({ seal: seal, unseal: unseal });
   }
 
-
   ////////////////////////////////////////////////////////////////////////
   // Exports
   ////////////////////////////////////////////////////////////////////////
-
-  caja = {
+  safeCaja = {
     // Diagnostics and condition enforcement
     getLogFunc: getLogFunc,
     setLogFunc: setLogFunc,
@@ -2159,7 +2238,6 @@ var ___;
     // Trademarking
     hasTrademark: hasTrademark,
     guard: guard,
-    audit: audit,
 
     // Sealing & Unsealing
     makeSealerUnsealerPair: makeSealerUnsealerPair,
@@ -2168,9 +2246,12 @@ var ___;
     def: def,
     USELESS: USELESS
   };
+  
+  caja = copy(safeCaja);
+  caja.def = unsafeDef;
 
   sharedImports = {
-    caja: caja,
+    caja: safeCaja,
 
     'null': null,
     'false': false,
@@ -2267,6 +2348,8 @@ var ___;
     tameException: tameException,
     callStackUnsealer: callStackSealer.unseal,
     RegExp: RegExp,  // Available to rewrite rule w/o risk of masking
+    stamp: stamp,
+    asFirstClass: asFirstClass,
 
     // Taming mechanism
     useGetHandler: useGetHandler,
