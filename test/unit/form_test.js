@@ -286,6 +286,11 @@ new Test.Unit.Runner({
     // test control groups
     var expected = {group_radio:'2r', group_checkbox:'2c'};
     this.assertHashEqual(expected, Form.serialize('form_with_control_groups', {submit:'button_commit'}));
+    
+    // forms with Rails style nested params should serialize in the right order
+    var form = $('form_with_rails_style_nested_params');
+    var expected = 'group[name]=a&group[person][][first_name]=b&group[person][][last_name]=c&group[person][][first_name]=d&group[person][][last_name]=e'
+    this.assertEqual(expected, unescape(form.serialize()))
   },
   
   testFormMethodsOnExtendedElements: function() {

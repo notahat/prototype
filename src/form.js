@@ -11,7 +11,8 @@ var Form = {
     var key, value, type, isImageType, isSubmitButton, submitSerialized;
     var submit = options.submit;
     
-    var data = elements.inject({ }, function(result, element) {
+    var start_with = options.hash ? { } : ''
+    var data = elements.inject(start_with, function(result, element) {
       element = $(element);
       key     = element.name;
       value   = element.getValue();
@@ -38,22 +39,37 @@ var Form = {
           var prefix = key ? key + '.' : '',
            x = options.x || 0, y = options.y || 0;
            
-          result[prefix + 'x'] = x;
-          result[prefix + 'y'] = y;
+          if (Object.isString(result)) {
+            if (result != '') result += '&';
+            var pairs = { }
+            pairs[prefix + 'x'] = x;
+            pairs[prefix + 'y'] = y;
+            result += Object.toQueryString(pairs);
+          }
+          else {
+            result[prefix + 'x'] = x;
+            result[prefix + 'y'] = y;
+          }
           return result;
         }
       } else if (!key) return result;
       
-      if (key in result) {
-        // a key is already present; construct an array of values
-        if (!Object.isArray(result[key])) result[key] = [result[key]];
-        result[key].push(value);
-      } else result[key] = value;
+      if (Object.isString(result)) {
+        if (result != '') result += '&';
+        result += element.serialize();
+      }
+      else {
+        if (key in result) {
+          // a key is already present; construct an array of values
+          if (!Object.isArray(result[key])) result[key] = [result[key]];
+          result[key].push(value);
+        } else result[key] = value;
+      }
       
       return result;
     });
     
-    return options.hash ? data : Object.toQueryString(data);
+    return data;
   }
 };
 

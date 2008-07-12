@@ -59,9 +59,7 @@ Ajax.Base = Class.create({
 
     this.options.method = this.options.method.toLowerCase();
 
-    if (Object.isString(this.options.parameters))
-      this.options.parameters = this.options.parameters.toQueryParams();
-    else if (Object.isHash(this.options.parameters))
+    if (Object.isHash(this.options.parameters))
       this.options.parameters = this.options.parameters.toObject();
   }
 });
@@ -78,17 +76,22 @@ Ajax.Request = Class.create(Ajax.Base, {
   request: function(url) {
     this.url = url;
     this.method = this.options.method;
-    var params = Object.clone(this.options.parameters);
+    var params = this.options.parameters;
+    if (!Object.isString(params)) params = Object.clone(params);
 
     if (!['get', 'post'].include(this.method)) {
       // simulate other verbs over post
-      params['_method'] = this.method;
+      if(Object.isString(params))
+        params += '_method=' + this.method;
+      else
+        params['_method'] = this.method;
       this.method = 'post';
     }
 
     this.parameters = params;
 
-    if (params = Object.toQueryString(params)) {
+    if (!Object.isString(params)) params = Object.toQueryString(params);
+    if (params) {
       // when GET, append parameters to URL
       if (this.method == 'get')
         this.url += (this.url.include('?') ? '&' : '?') + params;

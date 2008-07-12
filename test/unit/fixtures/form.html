@@ -99,6 +99,14 @@
   <input type="file" name="file_name" value="foo" />
 </form>
 
+<form id="form_with_rails_style_nested_params">
+  <input type="text" name="group[name]" value="a" />
+  <input type="text" name="group[person][][first_name]" value="b" />
+  <input type="text" name="group[person][][last_name]"  value="c" />
+  <input type="text" name="group[person][][first_name]" value="d" />
+  <input type="text" name="group[person][][last_name]"  value="e" />
+</form>
+
 <!-- tabindexed forms -->
 <div id="tabindex">
   <form id="ffe">
